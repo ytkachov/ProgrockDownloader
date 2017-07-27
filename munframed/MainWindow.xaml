@@ -4,9 +4,11 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:munframed"
+        xmlns:uc="clr-namespace:munframed.usercontrols"
         mc:Ignorable="d"
-        Title="MainWindow" Height="350" Width="525">
-    <Grid>
-        
-    </Grid>
+        Title="Music Unframed" Height="350" Width="525">
+  <DockPanel>
+    <uc:EpisodeHeader DockPanel.Dock="Top" />
+    <uc:SongList DockPanel.Dock="Left"/>
+  </DockPanel>
 </Window>

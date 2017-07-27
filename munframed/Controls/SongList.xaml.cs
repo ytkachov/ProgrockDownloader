@@ -13,28 +13,16 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-using munframed.model;
-
-namespace munframed
+namespace munframed.usercontrols
 {
   /// <summary>
-  /// Interaction logic for MainWindow.xaml
+  /// Interaction logic for SongList.xaml
   /// </summary>
-  public partial class MainWindow : Window
+  public partial class SongList : UserControl
   {
-
-    public MainWindow()
+    public SongList()
     {
       InitializeComponent();
-      DataContext = new MusicUnframed();
-
-      Dispatcher.ShutdownStarted += OnShutdownStarted;
-
-    }
-
-    private void OnShutdownStarted(object sender, EventArgs e)
-    {
-      ((MusicUnframed)DataContext).Shutdown();
     }
   }
 }
