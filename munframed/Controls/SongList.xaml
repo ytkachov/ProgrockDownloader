@@ -1,14 +1,13 @@
 ﻿<UserControl x:Class="munframed.usercontrols.SongList"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:cm="clr-namespace:System.ComponentModel;assembly=WindowsBase">
+             xmlns:cm="clr-namespace:System.ComponentModel;assembly=WindowsBase"
+             xmlns:c="clr-namespace:CalcBinding;assembly=CalcBinding"
+             xmlns:m="clr-namespace:System.Windows.Media;assembly=PresentationCore"
+             >
   <UserControl.Resources>
-    <CollectionViewSource x:Key="songList"
-                              Source="{Binding SongList}">
-      <CollectionViewSource.SortDescriptions>
-        <cm:SortDescription PropertyName="Name" />
-      </CollectionViewSource.SortDescriptions>
-    </CollectionViewSource>
+    <CollectionViewSource x:Key="songList" Source="{Binding SongList}">
+   </CollectionViewSource>
   </UserControl.Resources>
 
     <ScrollViewer VerticalScrollBarVisibility="Auto">
@@ -27,9 +26,20 @@
               <Border BorderBrush="{StaticResource redBrush}"
                                     BorderThickness="2"
                                     CornerRadius="4"
-                                    Background="White"
                                     Margin="0 0 2 2"
-                                    Padding="3">
+                                    Padding="3" MouseDown="OnMouseDown">
+              <Border.Style>
+                <Style TargetType="{x:Type Border}">
+                  <Style.Triggers>
+                    <DataTrigger Binding="{Binding Selected}" Value="true">
+                      <Setter Property="Background" Value="LightGray"></Setter>
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding Selected}" Value="false">
+                      <Setter Property="Background" Value="White"></Setter>
+                    </DataTrigger>
+                  </Style.Triggers>
+                </Style>
+              </Border.Style>
               <Grid>
                 <Grid.ColumnDefinitions>
                   <ColumnDefinition Width="Auto" />

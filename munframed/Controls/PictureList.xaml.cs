@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -13,28 +14,21 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-using munframed.model;
-
-namespace munframed
+namespace munframed.usercontrols
 {
   /// <summary>
-  /// Interaction logic for MainWindow.xaml
+  /// Interaction logic for PictureList.xaml
   /// </summary>
-  public partial class MainWindow : Window
+  public partial class PictureList : UserControl
   {
-
-    public MainWindow()
+    public PictureList()
     {
       InitializeComponent();
-      DataContext = new MusicUnframed();
-
-      Dispatcher.ShutdownStarted += OnShutdownStarted;
-
     }
 
-    private void OnShutdownStarted(object sender, EventArgs e)
+    private void OnMouseDown(object sender, MouseButtonEventArgs e)
     {
-      ((MusicUnframed)DataContext).Shutdown();
+      //EpisodeItem item = (EpisodeItem)DataContext;
     }
   }
 }

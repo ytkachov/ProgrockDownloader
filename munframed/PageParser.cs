@@ -7,127 +7,140 @@ using OpenQA.Selenium.Chrome; //to use googlechrome browser.
 using OpenQA.Selenium.Support;
 using OpenQA.Selenium.Support.UI;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+
+using progrock;
 using munframed.model;
 
 namespace munframed
 {
-  internal class PageParser
+  internal class PageParser : page_parser
+
   {
-    private IWebDriver _driver = new ChromeDriver();
+    private object _lock = new object();
 
-
-    public PageParser()
+    public async Task<string> ExistsAsync(string url)
     {
-      _driver.Manage().Timeouts().PageLoad = TimeSpan.FromSeconds(20);
-    }
-
-    internal void Shutdown()
-    {
-      _driver.Close();
-      _driver.Quit();
-    }
-
-
-    public async Task<string> Exists(string url)
-    {
-      try
+      var res = await Task.Run(() =>
       {
-        _driver.Navigate().GoToUrl(url);
-      }
-      catch
+        lock (_lock)
+        {
+          return Exists(url);
+        }
+      });
+
+      return res;
+    }
+
+    public async Task<int> ItemCountAsync()
+    {
+      var res = await Task.Run(() =>
       {
-        throw new PageTimeoutException();
-      }
+        lock (_lock)
+        {
+          return ItemCount();
+        }
+      });
 
-      var hdr = _driver.findElement(By.XPath("//*[@id=\"masthead\"]/div/div/h1/a"));
-      if (hdr == null || hdr.Text != "Music Unframed")
-        throw new WrongSiteException();
-
-      var oops = _driver.findElement(By.XPath("//*[@id=\"main\"]/section/header/h1"));
-      if (oops != null && oops.Text == "Oops! That page can’t be found.")
-        throw new WrongPageException();
-
-      return _driver.Title;
+      return res;
     }
 
-    public async Task<int> ItemCount()
+    public async Task<Tuple<string, string>> PrevPageAsync()
     {
-      var tbl = _driver.findElement(By.XPath("//*[@id=\"dslc-theme-content-inner\"]/table"));
-      if (tbl == null)
-        throw new IncorrectPageStructureException("Table of contents not found");
-
-      var items = tbl.FindElements(By.TagName("tr"));
-      return items.Count - 1;
-    }
-
-    public async Task<Tuple<string, string>> PrevPage()
-    {
-      var link = _driver.findElement(By.ClassName("nav-previous")).findElement(By.XPath("./a"));
-      if (link == null)
-        throw new LinkNotFoundException("No previous episode found");
-
-      return new Tuple<string, string>(link.Text, link.GetAttribute("href"));
-    }
-
-    public async Task<Tuple<string, string>> NextPage()
-    {
-      var link = _driver.findElement(By.ClassName("nav-next")).findElement(By.XPath("./a"));
-      if (link == null)
-        throw new LinkNotFoundException("No next episode found");
-
-      return new Tuple<string, string>(link.Text, link.GetAttribute("href"));
-    }
-
-    public async Task<List<Tuple<string, string, string, string, string, string>>> TOC()
-    {
-      var toc = new List<Tuple<string, string, string, string, string, string>>();
-
-      var tbl = _driver.findElement(By.XPath("//*[@id=\"dslc-theme-content-inner\"]/table"));
-      if (tbl == null)
-        throw new IncorrectPageStructureException("Table of contents not found");
-
-      var items = tbl.FindElements(By.TagName("tr"));
-      for (int i = 1; i < items.Count; i++)
+      var res = await Task.Run(() =>
       {
-        var tds = items[i].FindElements(By.TagName("td"));
-        if (tds.Count == 4)
-          toc.Add(new Tuple<string, string, string, string, string, string>(tds[0].Text, tds[1].Text, tds[2].Text, "", tds[3].Text, "0"));
-        else 
-          toc.Add(new Tuple<string, string, string, string, string, string>(tds[0].Text, tds[1].Text, tds[2].Text, tds[3].Text, tds[4].Text, tds[5].Text));
-      }
+        lock (_lock)
+        {
+          return PrevPage();
+        }
+      });
 
-      return toc;
+      return res;
     }
+
+    public async Task<Tuple<string, string>> NextPageAsync()
+    {
+      var res = await Task.Run(() =>
+      {
+        lock (_lock)
+        {
+          return NextPage();
+        }
+      });
+
+      return res;
+    }
+
+    public async Task<List<EpisodeItem>> TOCAsync()
+    {
+      var res = await Task.Run(() =>
+      {
+        lock (_lock)
+        {
+          var eis = TOC();
+          var eitems = new List<EpisodeItem>();
+          foreach (var ei in eis)
+            eitems.Add(new EpisodeItem(ei));
+
+          return eitems;
+        }
+      });
+
+      return res;
+    }
+
+    public async Task<List<SongPicture>> FindPicturesAsync(string band, string album, int year)
+    {
+      var res = await Task.Run(() =>
+      {
+        lock (_lock)
+        {
+          var picts = FindPictures(band, album, year);
+
+          var pictures = new List<SongPicture>();
+          foreach (var pict in picts)
+            pictures.Add(new SongPicture(pict));
+
+          return pictures;
+        }
+      });
+
+      return res;
+    }
+
   }
-
-  internal class WrongSiteException : Exception { public WrongSiteException() : base("URL provided is not Music Unframed Site") { } }
-  internal class WrongPageException : Exception { public WrongPageException() : base("Page not found on the site") { } }
-  internal class PageTimeoutException : Exception { public PageTimeoutException() : base("Can't load the requested page") { } }
-  internal class LinkNotFoundException : Exception { public LinkNotFoundException(string msg) : base(msg) { } }
-  internal class IncorrectPageStructureException : Exception { public IncorrectPageStructureException(string msg) : base(msg) { } }
 
   // взято отсюда:   https://msdn.microsoft.com/ru-ru/magazine/dn605875.aspx
   public sealed class NotifyTaskCompletion<TResult> : INotifyPropertyChanged
   {
-    public NotifyTaskCompletion(Task<TResult> task)
+    public Task<TResult> Task { get; private set; }
+    public NotifyTaskCompletion(Func<Task<TResult>> task)
     {
-      Task = task;
-      if (!Task.IsCompleted)
+      if (Task == null)
       {
-        var _ = WatchTaskAsync(Task);
+        TaskCompletion = WatchTask(task);
       }
     }
 
-    private async Task WatchTaskAsync(Task task)
+    public Task TaskCompletion { get; set; }
+
+    private async Task WatchTask(Func<Task<TResult>> task)
     {
       try
       {
-        await task;
+        Task = task();
+        await Task;
       }
       catch
       {
+
       }
 
+      OnTaskCompletion();
+    }
+
+    private void OnTaskCompletion()
+    {
       var propertyChanged = PropertyChanged;
       if (propertyChanged == null)
         return;
@@ -136,11 +149,11 @@ namespace munframed
       propertyChanged(this, new PropertyChangedEventArgs("IsCompleted"));
       propertyChanged(this, new PropertyChangedEventArgs("IsNotCompleted"));
 
-      if (task.IsCanceled)
+      if (Task.IsCanceled)
       {
         propertyChanged(this, new PropertyChangedEventArgs("IsCanceled"));
       }
-      else if (task.IsFaulted)
+      else if (Task.IsFaulted)
       {
         propertyChanged(this, new PropertyChangedEventArgs("IsFaulted"));
         propertyChanged(this, new PropertyChangedEventArgs("Exception"));
@@ -154,7 +167,6 @@ namespace munframed
       }
     }
 
-    public Task<TResult> Task { get; private set; }
     public TResult Result
     {
       get
@@ -193,26 +205,6 @@ namespace munframed
       }
     }
     public event PropertyChangedEventHandler PropertyChanged;
-  }
-
-  public static class SeleniumExtensions
-  {
-    public static IWebElement findElement(this ISearchContext self, By by)
-    {
-      if (self == null)
-        return null;
-
-      IWebElement el = null;
-      try
-      {
-        el = self.FindElement(by);
-      }
-      catch
-      {
-      }
-
-      return el;
-    }
   }
 
 }

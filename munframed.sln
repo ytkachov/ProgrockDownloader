@@ -5,6 +5,10 @@ VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "munframed", "munframed\munframed.csproj", "{991EC3EC-3D10-4F93-8627-435BA581F3C6}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "grabber", "grabber\grabber.csproj", "{6D114994-E689-4637-900D-DA716EB2F8CD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProgRock", "ProgRock\ProgRock.csproj", "{7FBCC29B-B199-4268-96DB-FFCB88173F47}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +19,14 @@ Global
 		{991EC3EC-3D10-4F93-8627-435BA581F3C6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{991EC3EC-3D10-4F93-8627-435BA581F3C6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{991EC3EC-3D10-4F93-8627-435BA581F3C6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6D114994-E689-4637-900D-DA716EB2F8CD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6D114994-E689-4637-900D-DA716EB2F8CD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6D114994-E689-4637-900D-DA716EB2F8CD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6D114994-E689-4637-900D-DA716EB2F8CD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7FBCC29B-B199-4268-96DB-FFCB88173F47}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7FBCC29B-B199-4268-96DB-FFCB88173F47}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7FBCC29B-B199-4268-96DB-FFCB88173F47}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7FBCC29B-B199-4268-96DB-FFCB88173F47}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

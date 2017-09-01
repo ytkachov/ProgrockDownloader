@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
@@ -18,13 +19,16 @@ namespace munframed.model
     private string _source_url;
 
     private PageParser _parser = new PageParser();
+    private Shell _view;
 
     #region Constructor
 
-    public MusicUnframed()
+    public MusicUnframed(Shell view)
     {
+      _view = view;
+
+      SongList = new ObservableCollection<EpisodeItem>();
       SourceUrl = @"http://munframed.com/episode1";
-      SongList = new ObservableCollection<EpisodeItem>(_toc);
     }
 
     #endregion
@@ -35,11 +39,10 @@ namespace munframed.model
       set
       {
         _source_url = value;
+
+        SongList.Clear();
+
         RaisePropertyChanged();
-
-        _toc.Clear();
-        SongList = new ObservableCollection<EpisodeItem>(_toc);
-
         Initialize(_source_url);
       }
     }
@@ -49,37 +52,84 @@ namespace munframed.model
       _parser.Shutdown();
     }
 
-    private List<EpisodeItem> _toc = new List<EpisodeItem>();
+    public void EpisodeItemClicked(EpisodeItem ei)
+    {
+      foreach (var e in SongList)
+        e.Selected = false;
+
+      ei.Selected = true;
+      SelectedItem = ei;
+    }
 
     private NotifyTaskCompletion<string> _exists;
     private NotifyTaskCompletion<int> _item_count;
     private NotifyTaskCompletion<Tuple<string, string>> _prev_episode;
     private NotifyTaskCompletion<Tuple<string, string>> _next_episode;
+    private NotifyTaskCompletion<List<EpisodeItem>> _toc;
+
     private ObservableCollection<EpisodeItem> _song_list;
+    private EpisodeItem _selected_item;
 
     public NotifyTaskCompletion<Tuple<string, string>> PrevEpisode { get { return _prev_episode; } private set { _prev_episode = value; RaisePropertyChanged(); } }
     public NotifyTaskCompletion<Tuple<string, string>> NextEpisode { get { return _next_episode; } private set { _next_episode = value; RaisePropertyChanged(); } }
     public NotifyTaskCompletion<int> ItemCount { get { return _item_count; } private set { _item_count = value; RaisePropertyChanged(); } }
     public NotifyTaskCompletion<string> Exists  { get { return _exists; } private set { _exists = value; RaisePropertyChanged(); } }
+    public NotifyTaskCompletion<List<EpisodeItem>> TOC { get { return _toc; } private set { _toc = value; RaisePropertyChanged(); } }
 
     public ObservableCollection<EpisodeItem> SongList { get { return _song_list; } private set { _song_list = value; RaisePropertyChanged(); } }
+    public EpisodeItem SelectedItem { get { return _selected_item; } private set { _selected_item = value; RaisePropertyChanged(); } }
 
-    private async void Initialize(string url)
+    private void Initialize(string url)
     {
-      Exists = new NotifyTaskCompletion<string>(_parser.Exists(url));
+      SelectedItem = null;
 
-      if (Exists.IsSuccessfullyCompleted)
+      Exists = new NotifyTaskCompletion<string>(() => _parser.ExistsAsync(url));
+      Exists.PropertyChanged += OnExistsSuccessfullyCompleted;
+    }
+
+    private void OnExistsSuccessfullyCompleted(object sender, PropertyChangedEventArgs e)
+    {
+      if (e.PropertyName == "IsSuccessfullyCompleted")
       {
-        ItemCount = new NotifyTaskCompletion<int>(_parser.ItemCount());
-        PrevEpisode = new NotifyTaskCompletion<Tuple<string, string>>(_parser.PrevPage());
-        NextEpisode = new NotifyTaskCompletion<Tuple<string, string>>(_parser.NextPage());
+        ItemCount = new NotifyTaskCompletion<int>(() => _parser.ItemCountAsync());
+        PrevEpisode = new NotifyTaskCompletion<Tuple<string, string>>(() => _parser.PrevPageAsync());
+        NextEpisode = new NotifyTaskCompletion<Tuple<string, string>>(() => _parser.NextPageAsync());
+        TOC = new NotifyTaskCompletion<List<EpisodeItem>>(() => _parser.TOCAsync());
 
-        var toc = await _parser.TOC();
+        TOC.PropertyChanged += OnTOCCompleted;
+      }
+    }
 
-        foreach (var item in toc)
-          _toc.Add(new EpisodeItem() { Start = item.Item1, Band = item.Item2, Name = item.Item3, Duration = item.Item4, Album = item.Item5, Year = Int32.Parse(item.Item6) });
+    private void OnTOCCompleted(object sender, PropertyChangedEventArgs e)
+    {
+      if (e.PropertyName == "IsSuccessfullyCompleted")
+      {
+        SongList.Clear();
+        foreach (var ei in TOC.Result)
+          SongList.Add(ei);
 
-        SongList = new ObservableCollection<EpisodeItem>(_toc);
+        SelectedItem = SongList[0];
+        SongList[0].PropertyChanged += OnPicturesReady;
+        SongList[0].FindPictures(_parser);
+      }
+    }
+
+    private void OnPicturesReady(object sender, PropertyChangedEventArgs e)
+    {
+      if (e.PropertyName != "PicturesReady")
+        return;
+
+      int itm = SongList.IndexOf((EpisodeItem)sender);
+      if (itm != -1)
+      {
+        SongList[itm].PropertyChanged -= OnPicturesReady;
+
+        // go to next song
+        if (itm != SongList.Count - 1)
+        {
+          SongList[itm + 1].PropertyChanged += OnPicturesReady;
+          SongList[itm + 1].FindPictures(_parser);
+        }
       }
     }
 
@@ -122,6 +172,9 @@ namespace munframed.model
       //*[@id="irc_cc"]/div[3]/div[1]/div[2]/div[2]/a/img
       //*[@id="irc_cc"]/div[3]/div[1]/div[2]/div[2]/a/img
       //*[@id="irc_cc"]/div[2]/div[1]/div[2]/div[2]/a/img
+      //*[@id="rg_s"]/div[1]
+      //*[@id="rg_s"]/div[2]
+      //*[@id="rg_s"]/div[1]/a
 
       SourceUrl = next ? NextEpisode.Result.Item2 : PrevEpisode.Result.Item2;
     }
