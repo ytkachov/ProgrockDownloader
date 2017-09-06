@@ -120,8 +120,23 @@ namespace progrock
         throw new IncorrectPageStructureException("Table of contents not found");
 
       var items = tbl.FindElements(By.TagName("tr"));
-      return items.Count - 1;
+      var firstrow = items[0].FindElements(By.TagName("td"));
+      int firstitem = 0;
+      if (firstrow[0].Text == "Time" && firstrow[1].Text == "Band" && firstrow[2].Text == "Song")
+        firstitem = 1;
+
+      return items.Count - firstitem;
     }
+
+    public string DownloadLink()
+    {
+      var dl = _driver.findElement(By.ClassName("powerpress_link_d"));
+      if (dl == null)
+        throw new IncorrectPageStructureException("Download link not found");
+
+      return dl.GetAttribute("href");
+    }
+    
 
     public Tuple<string, string> PrevPage()
     {
@@ -151,7 +166,14 @@ namespace progrock
         throw new IncorrectPageStructureException("Table of contents not found");
 
       var items = tbl.FindElements(By.TagName("tr"));
-      for (int i = 1; i < items.Count; i++)
+
+      // check if table is in old format
+      var firstrow = items[0].FindElements(By.TagName("td"));
+      int firstitem = 0;
+      if (firstrow[0].Text == "Time" && firstrow[1].Text == "Band" && firstrow[2].Text == "Song")
+        firstitem = 1;      
+
+      for (int i = firstitem; i < items.Count; i++)
       {
         var tds = items[i].FindElements(By.TagName("td"));
         var ei = new episode_item()
