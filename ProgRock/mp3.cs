@@ -64,6 +64,8 @@ namespace progrock
     public void SetTags(string band, int year, string album, string title, string[] picturepath)
     {
       _mp3file.Tag.Artists = new string[] { band };
+      _mp3file.Tag.AlbumArtists = new string[] { band };
+      _mp3file.Tag.Performers = new string[] { band };
       _mp3file.Tag.Year = (uint)year;
       _mp3file.Tag.Album = album;
       _mp3file.Tag.Title = title;

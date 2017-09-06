@@ -9,16 +9,6 @@ using System.Xml.Serialization;
 
 namespace progrock
 {
-  [XmlRoot("ProgRockPodcast")]
-  public class podcast
-  {
-    [XmlAttribute]
-    public string Name;
-
-    [XmlArray]
-    public List<episode> Episodes;
-  }
-
   [XmlRoot("Episode")]
   public class episode
   {

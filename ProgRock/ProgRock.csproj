@@ -67,6 +67,7 @@
     <Compile Include="episode_item.cs" />
     <Compile Include="mp3.cs" />
     <Compile Include="page_parser.cs" />
+    <Compile Include="podcast.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="song_picture.cs" />
   </ItemGroup>
