@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace grabber
@@ -33,13 +34,53 @@ namespace grabber
       podcast p = podcast.create("MusicUnframed", podcastfilename);
 
       parser = new page_parser();
-      p.collect_episodes(parser, initial_url);
+      //p.collect_episodes(parser, initial_url);
 
-      Console.WriteLine("Downloading music files");
-      p.download(datafolder);
+      //Console.WriteLine("Downloading music files");
+      //p.download(datafolder);
 
-      Console.WriteLine("Extracting songs");
-      p.extract_songs(datafolder, collectionfolder, picturesfolder);
+      //Console.WriteLine("Extracting songs");
+      //p.extract_songs(datafolder, collectionfolder, picturesfolder);
+
+      
+      try
+      {
+        var rnd = new Random(DateTime.Now.Millisecond);
+        foreach (var ep in p.Episodes)
+        {
+          Console.WriteLine(ep.Name);
+
+          foreach (var song in ep.Items)
+          {
+            string band = song.band.NormalizeFileName();
+            string album = song.album.NormalizeFileName();
+
+            var pictures = episode_item.FindPictures(band, album, picturesfolder, false);
+            if (pictures.Length != 0)
+              continue;
+
+            Thread.Sleep(rnd.Next(1000, 5000));
+            var bapictures = parser.FindPictures(band, album, true);
+            if (bapictures.Count == 0)
+              continue;
+
+            string bfolder = episode_item.BandFolder(band, picturesfolder);
+            Directory.CreateDirectory(bfolder);
+
+            string bafolder = episode_item.AlbumFolder(band, album, picturesfolder);
+            Directory.CreateDirectory(bafolder);
+            for (int i = 0; i < bapictures.Count; i++)
+            {
+              string ext = bapictures[i].extension;
+              bapictures[i].load(Path.Combine(bafolder, string.Format("{0:00}{1}", i, ext)));
+            }
+          }
+        }
+      }
+      catch (Exception e)
+      {
+        Console.WriteLine("\n\nException: " + e.Message + "\n\n");
+      }
 
       parser.Shutdown();
 

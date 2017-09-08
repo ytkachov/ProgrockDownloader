@@ -8,6 +8,7 @@ using OpenQA.Selenium.Support;
 using OpenQA.Selenium.Support.UI;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Threading;
 
 namespace progrock
 {
@@ -57,8 +58,14 @@ namespace progrock
       return _driver.Title;
     }
 
-    public List<song_picture> FindPictures(string band, string album, int year)
+    public List<song_picture> FindPictures(string band, string album, bool simulate = false)
     {
+      if (_driver == null)
+      {
+        _driver = new ChromeDriver();
+        _driver.Manage().Timeouts().PageLoad = TimeSpan.FromSeconds(20);
+      }
+
       List<song_picture> pictures = new List<song_picture>();
 
       string query = "https://www.google.com/search?tbm=isch&source=hp&q=";
@@ -70,10 +77,7 @@ namespace progrock
       foreach (var w in words)
         query += w + "+";
 
-      if (year != 0)
-        query += year.ToString() + "+";
-
-      query += "album+cover";
+      query += "album+images";
       _driver.Navigate().GoToUrl(query);
 
       var picturelinks = _driver.FindElements(By.XPath("//*[@id=\"rg_s\"]/div/a"));
@@ -89,8 +93,12 @@ namespace progrock
           break;
       }
 
+      var rnd = new Random(DateTime.Now.Millisecond);
       foreach (var href in hrefs)
       {
+        if (simulate)
+          Thread.Sleep(rnd.Next(1000, 5000));
+
         _driver.Navigate().GoToUrl(href);
         var imgs = _driver.FindElements(By.ClassName("irc_mi"));
         foreach (var img in imgs)

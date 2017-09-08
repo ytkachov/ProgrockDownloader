@@ -10,6 +10,19 @@ namespace progrock
     protected string _picture_url;
     protected string _picture_path;
 
+    public string extension
+    {
+      get
+      {
+        string ext = "";
+        int pos = _picture_url.LastIndexOf('.');
+        if (pos != -1)
+          ext = _picture_url.Substring(pos);
+
+        return ext;
+      }
+    }
+
     public song_picture(string url)
     {
       _picture_url = url;

@@ -76,7 +76,6 @@ namespace progrock
             Episodes.Add(ep);
           }
 
-          break;
           ep.NextEpisodeUrl = parser.NextPage().Item2;  // if no new episode exists then we exit from the loop by exception
         }
       }
@@ -168,24 +167,6 @@ namespace progrock
 
   public static class ClassesExtensions
   {
-    public static string[] FindPictures(this episode_item self, string foldername)
-    {
-      List<string> pl = new List<string>();
-      for (int i = 0; i < 20; i++)
-      {
-        string pn = string.Format("{0} ^^ {1} ^^ {2} ^^ {3:00}", self.band.NormalizeFileName(), self.album.NormalizeFileName(), self.year, i);
-        string path = Path.Combine(foldername, pn);
-        foreach (var ext in new string[] { ".jpg", ".jpeg", ".png" })
-        {
-          string filename = path + ext;
-          if (File.Exists(filename))
-            pl.Add(filename);
-        }
-      }
-
-      return pl.ToArray();
-    }
-
     public static string NormalizeFileName(this string self)
     {
 
