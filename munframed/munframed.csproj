@@ -94,6 +94,7 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="AsyncTasks.cs" />
     <Compile Include="Controls\EpisodeHeader.xaml.cs">
       <DependentUpon>EpisodeHeader.xaml</DependentUpon>
     </Compile>

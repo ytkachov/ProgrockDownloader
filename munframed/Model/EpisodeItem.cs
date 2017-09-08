@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using progrock;
+using asynctask;
 
 namespace munframed.model
 {
@@ -18,12 +19,12 @@ namespace munframed.model
     private string _start;
     private string _duration;
     private bool _selected;
-    private bool _pictures_ready;
+
     private List<SongPicture> _pictures_list;
     private ObservableCollection<SongPicture> _pictures;
 
     private NotifyTaskCompletion<List<SongPicture>> _loading_pictures;
-    private NotifyTaskCompletion<SongPicture> _picture;
+    public NotifyTaskCompletion<List<SongPicture>> LoadingPictures { get { return _loading_pictures; } private set { _loading_pictures = value; RaisePropertyChanged(); } }
 
     public EpisodeItem()
     {
@@ -33,6 +34,7 @@ namespace munframed.model
     public EpisodeItem(episode_item ei)
     {
       PictureList = new ObservableCollection<SongPicture>();
+
       Name = ei.name;
       Band = ei.band;
       Album = ei.album;
@@ -41,58 +43,48 @@ namespace munframed.model
       Duration = ei.duration;
     }
 
-    public void FindPictures(PageParser parser)
-    {
-      _loading_pictures = new NotifyTaskCompletion<List<SongPicture>>(() => parser.FindPicturesAsync(Band, Album, Year));
-      _loading_pictures.PropertyChanged += OnPicturesFound;
-    }
-
-    public void LoadPicture(SongPicture pict)
-    {
-      //_picture = new NotifyTaskCompletion<SongPicture>(() => pict.LoadPictureAsync());
-      //_picture.PropertyChanged += OnPictureLoaded;
-    }
-
-    private void OnPicturesFound(object sender, PropertyChangedEventArgs e)
+    private void OnPicturesLoaded(object sender, PropertyChangedEventArgs e)
     {
       if (e.PropertyName == "IsSuccessfullyCompleted")
       {
-        PicturesReady = true;
-        _pictures_list = _loading_pictures.Result;
-        LoadPictures();
+        _pictures_list = LoadingPictures.Result;
+        PictureList = new ObservableCollection<SongPicture>(_pictures_list);
       }
-      else
-        PicturesReady = false;
     }
 
     private void LoadPictures()
     {
-      //if (_pictures_list.Count > 0)
-      //  LoadPicture(_pictures_list[0]);
-      //foreach (var pict in _pictures_list)
-      //  PictureList.Add(pict);
+      LoadingPictures = new NotifyTaskCompletion<List<SongPicture>>(() => LoadPicturesAsync());
+      LoadingPictures.PropertyChanged += OnPicturesLoaded;
     }
 
-    private void OnPictureLoaded(object sender, PropertyChangedEventArgs e)
+    private async Task<List<SongPicture>> LoadPicturesAsync()
     {
-      var sndr = (NotifyTaskCompletion<SongPicture>)sender;
-      SongPicture picture = sndr.Result;
-      if (e.PropertyName == "IsSuccessfullyCompleted" && picture.Picture != null)
-      {
-        PictureList.Add(picture);
-      }
+        var res = await Task.Run(() =>
+        {
+          var lst = new List<SongPicture>();
 
-      if (sndr.IsCompleted)
+
+          return lst;
+        });
+        
+        return res;
+    }
+
+    public ObservableCollection<SongPicture> PictureList { get { return _pictures; } private set { _pictures = value; RaisePropertyChanged(); } }
+    public bool Selected
+    {
+      get { return _selected; }
+      set
       {
-        int itm = _pictures_list.IndexOf(picture);
-        if (itm != -1 && itm != _pictures_list.Count - 1)
-          LoadPicture(_pictures_list[itm + 1]);
+        _selected = value;
+        RaisePropertyChanged();
+
+        if (PictureList.Count == 0)
+          LoadPictures();
       }
     }
 
-    public bool PicturesReady { get { return _pictures_ready; } private set { _pictures_ready = value; RaisePropertyChanged(); } }
-    public ObservableCollection<SongPicture> PictureList { get { return _pictures; } private set { _pictures = value; RaisePropertyChanged(); } }
-    public bool Selected { get { return _selected; } set { _selected = value; RaisePropertyChanged(); } }
     public string Name 
     {
       get { return _name; }

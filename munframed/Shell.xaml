@@ -12,6 +12,6 @@
   <DockPanel>
     <uc:EpisodeHeader DockPanel.Dock="Top" />
     <uc:SongList DockPanel.Dock="Left"/>
-    <uc:PictureList x:Name="SelectedItemPictures" DataContext="{Binding SelectedItem}" DockPanel.Dock="Right" Visibility="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}, Path=DataContext.SelectedItem, Converter={local:NullToVisibilityConverter}}"/>
+    <uc:PictureList x:Name="SelectedItemPictures" DataContext="{Binding SelectedItem}" DockPanel.Dock="Right" />
   </DockPanel>
 </Window>

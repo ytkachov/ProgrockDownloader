@@ -27,12 +27,12 @@
           <ColumnDefinition Width="auto"/>
         </Grid.ColumnDefinitions>
 
-        <TextBox Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Name="source_url" Text="{Binding Path=Title}" BorderThickness="1" VerticalAlignment="Center" HorizontalAlignment="Stretch"  FontWeight="Bold" />
-        <Button Grid.Row="0" Grid.Column="2" Content="&lt;" Command="{Binding GoPrev}" Padding="1" Margin="2" Width="20" HorizontalAlignment="Left" ToolTip="{Binding PrevEpisode.Result.Item1}"/>
-        <Button Grid.Row="0" Grid.Column="3" Content="&gt;" Command="{Binding GoNext}" Padding="1" Margin="2" Width="20" HorizontalAlignment="Left" ToolTip="{Binding NextEpisode.Result.Item1}"/>
+        <TextBox Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Text="{Binding Title, Mode=OneWay}" BorderThickness="1" VerticalAlignment="Center" HorizontalAlignment="Stretch"  FontWeight="Bold" />
+        <Button Grid.Row="0" Grid.Column="2" Content="&lt;" Command="{Binding GoPrev}" Padding="1" Margin="2" Width="20" HorizontalAlignment="Left" />
+        <Button Grid.Row="0" Grid.Column="3" Content="&gt;" Command="{Binding GoNext}" Padding="1" Margin="2" Width="20" HorizontalAlignment="Left" />
 
         <Label Grid.Row="1" Grid.Column="0" Content="Songs count:"/>
-        <Label Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Content="{Binding ItemCount}" Style="{StaticResource LightLabel}" />
+        <Label Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Content="{Binding ItemCount, Mode=OneWay}" Style="{StaticResource LightLabel}" />
       </Grid>
     </Border>
   </Grid>

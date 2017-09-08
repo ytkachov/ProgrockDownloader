@@ -58,13 +58,12 @@
                     <RowDefinition />
                   </Grid.RowDefinitions>
 
-                  <TextBlock Grid.Row="1" Grid.Column="2" Text="URL:" />
-                  <TextBlock Grid.Row="1" Grid.Column="3" Grid.ColumnSpan="3" Text="{Binding PictureUrl}" FontWeight="Bold"/>
-                  <CheckBox  Grid.Row="2" Grid.Column="1" IsChecked="{Binding Selected}" />
-                  <TextBlock Grid.Row="3" Grid.Column="2" Text="X = " />
-                  <TextBlock Grid.Row="3" Grid.Column="3" Text="{Binding X}" FontWeight="Bold"/>
-                  <TextBlock Grid.Row="3" Grid.Column="4" Text="Y = " />
-                  <TextBlock Grid.Row="3" Grid.Column="5" Text="{Binding Y}" FontWeight="Bold"/>
+                  <CheckBox  Grid.Row="0" Grid.Column="0" IsChecked="{Binding Selected}" />
+                  <Image  Grid.Row="0" Grid.Column="1" Source = "{Binding Picture}" />
+                  <TextBlock Grid.Row="1" Grid.Column="1" Text="X = " />
+                  <TextBlock Grid.Row="1" Grid.Column="2" Text="{Binding X}" FontWeight="Bold"/>
+                  <TextBlock Grid.Row="1" Grid.Column="3" Text="Y = " />
+                  <TextBlock Grid.Row="1" Grid.Column="4" Text="{Binding Y}" FontWeight="Bold"/>
                 </Grid>
               </Border>
             </Grid>

@@ -22,14 +22,59 @@ namespace progrock
 
   public partial class podcast
   {
+    private static string _folder;
+    private static string _collectionfolder;
+    private static string _datafolder;
+    private static string _picturesfolder;
+
+    public static string RootFolder
+    {
+      get
+      {
+        return _folder;
+      }
+      set
+      {
+        _folder = value;
+        _collectionfolder = Path.Combine(_folder, "_collection");
+        _picturesfolder = Path.Combine(_folder, "_pictures");
+        _datafolder = Path.Combine(_folder, "_musicdata");
+      }
+    }
+
+    public static string CollectionFolder
+    {
+      get
+      {
+        return _collectionfolder;
+      }
+    }
+
+    public static string DataFolder
+    {
+      get
+      {
+        return _datafolder;
+      }
+    }
+
+    public static string PicturesFolder
+    {
+      get
+      {
+        return _picturesfolder;
+      }
+    }
+
     private podcast()
     {
 
     }
 
-    public static podcast create(string pname, string ppath)
+    public static podcast create(string pname, string path)
     {
       podcast p;
+      string ppath = Path.Combine(podcast.RootFolder, path);
       if (!File.Exists(ppath))
         p = new podcast() { Name = pname, Episodes = new List<episode>() };
       else
