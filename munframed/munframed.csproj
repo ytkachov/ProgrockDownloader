@@ -103,7 +103,6 @@
     <Compile Include="Controls\SongList.xaml.cs">
       <DependentUpon>SongList.xaml</DependentUpon>
     </Compile>
-    <Compile Include="PageParser.cs" />
     <Compile Include="Shell.xaml.cs">
       <DependentUpon>Shell.xaml</DependentUpon>
       <SubType>Code</SubType>

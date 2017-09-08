@@ -19,29 +19,20 @@
         <Grid.RowDefinitions>
           <RowDefinition Height="auto"/>
           <RowDefinition Height="auto"/>
-          <RowDefinition Height="auto"/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
-          <ColumnDefinition Width="auto"/>
           <ColumnDefinition Width="auto"/>
           <ColumnDefinition Width="*"/>
           <ColumnDefinition Width="auto"/>
           <ColumnDefinition Width="auto"/>
         </Grid.ColumnDefinitions>
 
-        <Label Grid.Row="0" Grid.Column="0" Content="Path:" />
-        <TextBox Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="2" Name="source_url" Text="{Binding Path=SourceUrl, UpdateSourceTrigger=PropertyChanged}" BorderThickness="1" VerticalAlignment="Center" HorizontalAlignment="Stretch"  FontWeight="Bold" />
-        <Button Grid.Row="0" Grid.Column="3" Content="&lt;" Command="{Binding GoPrev}" Padding="1" Margin="2" Width="20" HorizontalAlignment="Left" ToolTip="{Binding PrevEpisode.Result.Item1}"/>
-        <Button Grid.Row="0" Grid.Column="4" Content="&gt;" Command="{Binding GoNext}" Padding="1" Margin="2" Width="20" HorizontalAlignment="Left" ToolTip="{Binding NextEpisode.Result.Item1}"/>
+        <TextBox Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Name="source_url" Text="{Binding Path=Title}" BorderThickness="1" VerticalAlignment="Center" HorizontalAlignment="Stretch"  FontWeight="Bold" />
+        <Button Grid.Row="0" Grid.Column="2" Content="&lt;" Command="{Binding GoPrev}" Padding="1" Margin="2" Width="20" HorizontalAlignment="Left" ToolTip="{Binding PrevEpisode.Result.Item1}"/>
+        <Button Grid.Row="0" Grid.Column="3" Content="&gt;" Command="{Binding GoNext}" Padding="1" Margin="2" Width="20" HorizontalAlignment="Left" ToolTip="{Binding NextEpisode.Result.Item1}"/>
 
-        <Label Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="4" Content="Loading..." Visibility="{Binding Exists.IsNotCompleted, Converter={StaticResource BooleanToVisibilityConverter}}" FontSize="10" Foreground="DarkBlue" Style="{StaticResource LightLabel}"  />
-        <Label Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="4" Content="{Binding Exists.Result}" Visibility="{Binding Exists.IsSuccessfullyCompleted, Converter={StaticResource BooleanToVisibilityConverter}}" FontSize="10" Style="{StaticResource LightLabel}" />
-        <Label Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="4" Content="{Binding Exists.ErrorMessage}" Visibility="{Binding Exists.IsFaulted, Converter={StaticResource BooleanToVisibilityConverter}}" FontSize="10" Foreground="DarkRed" Style="{StaticResource LightLabel}" />
-
-        <Label Grid.Row="2" Grid.Column="1" Content="Songs count:"/>
-        <Label Grid.Row="2" Grid.Column="2" Content="Searching..." Visibility="{Binding ItemCount.IsNotCompleted, Converter={StaticResource BooleanToVisibilityConverter}}" Foreground="DarkBlue" Style="{StaticResource LightLabel}" />
-        <Label Grid.Row="2" Grid.Column="2" Content="{Binding ItemCount.Result}" Visibility="{Binding Exists.IsSuccessfullyCompleted, Converter={StaticResource BooleanToVisibilityConverter}}" Style="{StaticResource LightLabel}" />
-        <Label Grid.Row="2" Grid.Column="2" Content="{Binding ItemCount.ErrorMessage}" Visibility="{Binding ItemCount.IsFaulted, Converter={StaticResource BooleanToVisibilityConverter}}" Foreground="DarkRed" Style="{StaticResource LightLabel}" />
+        <Label Grid.Row="1" Grid.Column="0" Content="Songs count:"/>
+        <Label Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Content="{Binding ItemCount}" Style="{StaticResource LightLabel}" />
       </Grid>
     </Border>
   </Grid>

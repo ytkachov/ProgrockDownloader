@@ -46,12 +46,6 @@ namespace munframed
     public Shell()
     {
       InitializeComponent();
-      Dispatcher.ShutdownStarted += OnShutdownStarted;
-    }
-
-    private void OnShutdownStarted(object sender, EventArgs e)
-    {
-      ((MusicUnframed)DataContext).Shutdown();
     }
 
     private void OnLoaded(object sender, RoutedEventArgs e)
