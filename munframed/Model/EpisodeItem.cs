@@ -12,19 +12,13 @@ namespace munframed.model
 {
   class EpisodeItem : Notifier
   {
-    private string _name;
-    private string _band;
-    private string _album;
-    private int _year;
-    private string _start;
-    private string _duration;
+    private episode_item _song;
     private bool _selected;
 
-    private List<SongPicture> _pictures_list;
     private ObservableCollection<SongPicture> _pictures;
 
-    private NotifyTaskCompletion<List<SongPicture>> _loading_pictures;
-    public NotifyTaskCompletion<List<SongPicture>> LoadingPictures { get { return _loading_pictures; } private set { _loading_pictures = value; RaisePropertyChanged(); } }
+    private NotifyTaskCompletion<List<song_picture>> _loading_pictures;
+    public NotifyTaskCompletion<List<song_picture>> LoadingPictures { get { return _loading_pictures; } private set { _loading_pictures = value; RaisePropertyChanged(); } }
 
     public EpisodeItem()
     {
@@ -35,35 +29,39 @@ namespace munframed.model
     {
       PictureList = new ObservableCollection<SongPicture>();
 
-      Name = ei.name;
-      Band = ei.band;
-      Album = ei.album;
-      Year = ei.year;
-      Start = ei.start;
-      Duration = ei.duration;
+      _song = ei;
     }
 
     private void OnPicturesLoaded(object sender, PropertyChangedEventArgs e)
     {
       if (e.PropertyName == "IsSuccessfullyCompleted")
       {
-        _pictures_list = LoadingPictures.Result;
-        PictureList = new ObservableCollection<SongPicture>(_pictures_list);
+        PictureList.Clear();
+        var pl = LoadingPictures.Result;
+        foreach (var p in pl)
+          PictureList.Add(new SongPicture(p));
       }
     }
 
     private void LoadPictures()
     {
-      LoadingPictures = new NotifyTaskCompletion<List<SongPicture>>(() => LoadPicturesAsync());
+      LoadingPictures = new NotifyTaskCompletion<List<song_picture>>(() => LoadPicturesAsync());
       LoadingPictures.PropertyChanged += OnPicturesLoaded;
     }
 
-    private async Task<List<SongPicture>> LoadPicturesAsync()
+    private async Task<List<song_picture>> LoadPicturesAsync()
     {
         var res = await Task.Run(() =>
         {
-          var lst = new List<SongPicture>();
+          var lst = new List<song_picture>();
 
+          string [] pictures = _song.FindPictures(podcast.PicturesFolder, false);
+          foreach (var pict in pictures)
+          {
+            var p = new song_picture();
+            p.read(pict);
+            lst.Add(p);
+          }
 
           return lst;
         });
@@ -80,62 +78,62 @@ namespace munframed.model
         _selected = value;
         RaisePropertyChanged();
 
-        if (PictureList.Count == 0)
+        if (_selected && PictureList.Count == 0)
           LoadPictures();
       }
     }
 
     public string Name 
     {
-      get { return _name; }
+      get { return _song.name; }
       set
       {
-        _name = value;
+        _song.name = value;
         RaisePropertyChanged();
       }
     }
     public string Band
     {
-      get { return _band; }
+      get { return _song.band; }
       set
       {
-        _band = value;
+        _song.band = value;
         RaisePropertyChanged();
       }
     }
     public string Album
     {
-      get { return _album; }
+      get { return _song.album; }
       set
       {
-        _album = value;
+        _song.album = value;
         RaisePropertyChanged();
       }
     }
     public int Year
     {
-      get { return _year; }
+      get { return _song.year; }
       set
       {
-        _year = value;
+        _song.year = value;
         RaisePropertyChanged();
       }
     }
     public string Start
     {
-      get { return _start; }
+      get { return _song.start; }
       set
       {
-        _start = value;
+        _song.start = value;
         RaisePropertyChanged();
       }
     }
     public string Duration
     {
-      get { return _duration; }
+      get { return _song.duration; }
       set
       {
-        _duration = value;
+        _song.duration = value;
         RaisePropertyChanged();
       }
     }

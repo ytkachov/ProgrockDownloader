@@ -5,24 +5,35 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
 using progrock;
+using System.IO;
 
 namespace munframed.model
 {
   class SongPicture : Notifier
   {
-    private int _x;
-    private int _y;
+    private song_picture _data;
     private BitmapImage _picture;
-    private song_picture _pict;
-
-    public SongPicture(song_picture pict)
+    public SongPicture(song_picture data)
     {
-      _pict = pict;
+      _data = data;
+      _picture = new BitmapImage();
+      using (var mem = new MemoryStream(_data.rawdata))
+      {
+        mem.Position = 0;
+        _picture.BeginInit();
+        _picture.CreateOptions = BitmapCreateOptions.PreservePixelFormat;
+        _picture.CacheOption = BitmapCacheOption.OnLoad;
+        _picture.UriSource = null;
+        _picture.StreamSource = mem;
+        _picture.EndInit();
+      }
+      _picture.Freeze();
+
     }
 
-    public int X { get { return _x; } set { _x = value; RaisePropertyChanged(); } }
-    public int Y { get { return _y; } set { _y = value; RaisePropertyChanged(); } }
-    public BitmapImage Picture { get { return _picture; } set { _picture = value; RaisePropertyChanged(); } }
-
+    public int X { get { return (int) _picture.Width; } }
+    public int Y { get { return (int) _picture.Height; } }
+    public bool Selected { get { return _data.selected; } set { _data.selected = value; RaisePropertyChanged(); } }
+    public BitmapImage Picture { get { return _picture; } }
   }
 }

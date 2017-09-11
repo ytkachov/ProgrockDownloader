@@ -24,46 +24,42 @@
         <TextBlock DockPanel.Dock="Left" Text=" / " />
         <TextBlock DockPanel.Dock="Left" Text="{Binding Name}" />
         <TextBlock DockPanel.Dock="Right" Text="{Binding Band}" />
+        <Button Content="*" Command="{Binding RefreshImages}" Padding="1" Margin="2" Width="30"/>
       </DockPanel>
     </Border>
     <ScrollViewer VerticalScrollBarVisibility="Auto">
-      <ItemsControl Width="300"
-                          VerticalAlignment="Stretch"
-                          BorderThickness="0"
-                          ItemsSource="{Binding Source={StaticResource pictureList}}"
-                          >
+      <ItemsControl VerticalAlignment="Stretch"
+                    BorderThickness="0"
+                    ItemsSource="{Binding Source={StaticResource pictureList}}"
+                    >
         <ItemsControl.ItemTemplate>
           <DataTemplate>
-            <Grid Margin="2">
+            <Grid Margin="5">
               <Border Margin="2 2 0 0"
                                     CornerRadius="4"
-                                    Background="Gray"
+                                    Background="LightGray"
                                     Opacity=".5" />
               <Border BorderBrush="{StaticResource greenBrush}"
                                     BorderThickness="2"
                                     CornerRadius="4"
                                     Margin="0 0 2 2"
                                     Padding="3" >
-                <Grid>
-                  <Grid.ColumnDefinitions>
-                    <ColumnDefinition />
-                    <ColumnDefinition />
-                    <ColumnDefinition />
-                    <ColumnDefinition />
-                    <ColumnDefinition />
-                  </Grid.ColumnDefinitions>
+                <Grid Margin="5">
                   <Grid.RowDefinitions>
-                    <RowDefinition />
                     <RowDefinition />
                     <RowDefinition />
                   </Grid.RowDefinitions>
 
-                  <CheckBox  Grid.Row="0" Grid.Column="0" IsChecked="{Binding Selected}" />
-                  <Image  Grid.Row="0" Grid.Column="1" Source = "{Binding Picture}" />
-                  <TextBlock Grid.Row="1" Grid.Column="1" Text="X = " />
-                  <TextBlock Grid.Row="1" Grid.Column="2" Text="{Binding X}" FontWeight="Bold"/>
-                  <TextBlock Grid.Row="1" Grid.Column="3" Text="Y = " />
-                  <TextBlock Grid.Row="1" Grid.Column="4" Text="{Binding Y}" FontWeight="Bold"/>
+                  <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="5">
+                    <CheckBox HorizontalAlignment="Left" Width="30" IsChecked="{Binding Selected}" />
+                    <Image  Width="600" HorizontalAlignment="Left" Stretch="{Binding X, Converter={local:WidthToStretch}}" Source="{Binding Picture, Mode=OneTime}" />
+                  </StackPanel>
+                  <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="5">
+                    <TextBlock Text="X = " />
+                    <TextBlock Text="{Binding X, Mode=OneTime}" FontWeight="Bold" Padding="0,0,10,0"/>
+                    <TextBlock Text="Y = "/>
+                    <TextBlock Text="{Binding Y, Mode=OneTime}" FontWeight="Bold"/>
+                  </StackPanel>
                 </Grid>
               </Border>
             </Grid>
