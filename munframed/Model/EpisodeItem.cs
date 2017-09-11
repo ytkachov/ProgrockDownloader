@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using progrock;
 using asynctask;
+using System.Windows.Input;
 
 namespace munframed.model
 {
@@ -16,6 +17,7 @@ namespace munframed.model
     private bool _selected;
 
     private ObservableCollection<SongPicture> _pictures;
+    private CommandHandler _refresh_images;
 
     private NotifyTaskCompletion<List<song_picture>> _loading_pictures;
     public NotifyTaskCompletion<List<song_picture>> LoadingPictures { get { return _loading_pictures; } private set { _loading_pictures = value; RaisePropertyChanged(); } }
@@ -28,6 +30,7 @@ namespace munframed.model
     public EpisodeItem(episode_item ei)
     {
       PictureList = new ObservableCollection<SongPicture>();
+      _refresh_images = new CommandHandler(() => refresh_images(), true);
 
       _song = ei;
     }
@@ -69,6 +72,7 @@ namespace munframed.model
         return res;
     }
 
+    public ICommand RefreshImages { get { return _refresh_images; } }
     public ObservableCollection<SongPicture> PictureList { get { return _pictures; } private set { _pictures = value; RaisePropertyChanged(); } }
     public bool Selected
     {
@@ -138,5 +142,9 @@ namespace munframed.model
       }
     }
 
+    private void refresh_images()
+    {
+
+    }
   }
 }

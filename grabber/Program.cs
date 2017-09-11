@@ -13,8 +13,8 @@ namespace grabber
   class Program
   {
 
-    static string initial_url = @"http://munframed.com/episode-3";
-    static page_parser parser;
+    //static string initial_url = @"http://munframed.com/episode-3";
+    static string initial_url = @"http://munframed.com/episode-2";
 
     static void Main(string[] args)
     {
@@ -26,14 +26,14 @@ namespace grabber
 
       podcast p = podcast.create("MusicUnframed", podcastfilename);
 
-      parser = new page_parser();
-      //p.collect_episodes(parser, initial_url);
+      var parser = p.get_page_parser();
+      p.collect_episodes(parser, initial_url);
 
-      //Console.WriteLine("Downloading music files");
-      //p.download(podcast.PicturesFolder);
+      Console.WriteLine("Downloading music files");
+      p.download(podcast.DataFolder);
 
-      //Console.WriteLine("Extracting songs");
-      //p.extract_songs(datafolder, podcast.PicturesFolder, podcast.PicturesFolder);
+      Console.WriteLine("Extracting songs");
+      p.extract_songs(podcast.DataFolder, podcast.CollectionFolder, podcast.PicturesFolder);
 
 
       try
@@ -45,22 +45,20 @@ namespace grabber
 
           foreach (var song in ep.Items)
           {
-            string band = song.band.NormalizeFileName();
-            string album = song.album.NormalizeFileName();
-
-            var pictures = episode_item.FindPictures(band, album, podcast.PicturesFolder, false);
+            var pictures = song.FindPictures(podcast.PicturesFolder, false);
             if (pictures.Length != 0)
               continue;
 
             Thread.Sleep(rnd.Next(1000, 5000));
-            var bapictures = parser.FindPictures(band, album, true);
+            var bapictures = parser.FindPictures(song.band, song.album, true);
+
             if (bapictures.Count == 0)
               continue;
 
-            string bfolder = episode_item.BandFolder(band, podcast.PicturesFolder);
+            string bfolder = song.BandFolder(podcast.PicturesFolder);
             Directory.CreateDirectory(bfolder);
 
-            string bafolder = episode_item.AlbumFolder(band, album, podcast.PicturesFolder);
+            string bafolder = song.AlbumFolder(podcast.PicturesFolder);
             Directory.CreateDirectory(bafolder);
             for (int i = 0; i < bapictures.Count; i++)
             {

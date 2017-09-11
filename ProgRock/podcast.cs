@@ -27,6 +27,8 @@ namespace progrock
     private static string _datafolder;
     private static string _picturesfolder;
 
+    private IPageParser _page_parser;
+
     public static string RootFolder
     {
       get
@@ -92,7 +94,16 @@ namespace progrock
       return p;
     }
 
-    public void collect_episodes(page_parser parser, string initial_url)
+    public IPageParser get_page_parser()
+    {
+      if (_page_parser == null)
+        _page_parser = new munframed_page_parser();
+
+      return _page_parser;
+      throw new NotImplementedException();
+    }
+
+    public void collect_episodes(IPageParser parser, string initial_url)
     {
       try
       {
@@ -122,6 +133,7 @@ namespace progrock
           }
 
           ep.NextEpisodeUrl = parser.NextPage().Item2;  // if no new episode exists then we exit from the loop by exception
+          break;
         }
       }
       catch (Exception e)

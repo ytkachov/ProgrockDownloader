@@ -56,7 +56,7 @@ namespace progrock
 
     public static string AlbumFolder(string band, string album, string rootname)
     {
-      return Path.Combine(BandFolder(band, rootname), album);
+      return Path.Combine(BandFolder(band, rootname), album.NormalizeFileName());
     }
 
     public static string[] FindPictures(string band, string album, string rootname, bool selectedonly)
