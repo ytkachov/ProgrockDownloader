@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Net;
 using System.Threading.Tasks;
@@ -9,31 +10,14 @@ namespace progrock
 {
   public class song_picture
   {
-    public string picture_url;
+    public Bitmap bitmap;
     public string picture_path;
     public byte [] rawdata;
     public bool selected;
 
-    public string extension
+    public song_picture(Bitmap picture)
     {
-      get
-      {
-        string ext = "";
-        int pos = picture_url.LastIndexOf('.');
-        if (pos != -1)
-          ext = picture_url.Substring(pos);
-
-        return ext;
-      }
-    }
-
-    public song_picture(string url)
-    {
-      picture_url = url;
-    }
-
-    public song_picture()
-    {
+      bitmap = picture;
     }
 
     public void read(string path)
@@ -48,16 +32,16 @@ namespace progrock
       }
     }
 
-    public void load(string path)
+    public void write(string path)
     {
       picture_path = path;
       try
       {
-        var bytes = new WebClient().DownloadData(picture_url);
-        File.WriteAllBytes(picture_path, bytes);
+        bitmap.Save(picture_path, ImageFormat.Jpeg);
       }
-      catch
+      catch (Exception e)
       {
+        string m = e.Message;
       }
     }
   }

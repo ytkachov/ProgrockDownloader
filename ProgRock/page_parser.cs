@@ -9,6 +9,10 @@ using OpenQA.Selenium.Support.UI;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Threading;
+using OpenQA.Selenium.Interactions;
+using System.Drawing.Imaging;
+using System.Drawing;
+using System.IO;
 
 namespace progrock
 {
@@ -53,11 +57,11 @@ namespace progrock
       List<song_picture> pictures = new List<song_picture>();
 
       string query = "https://www.google.com/search?tbm=isch&source=hp&q=";
-      var words = band.Split(" ".ToCharArray());
+      var words = band.Split(" !*'();:@&=+$,/?%#[]".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
       foreach (var w in words)
         query += w + "+";
 
-      words = album.Split(" ".ToCharArray());
+      words = album.Split(" !*'();:@&=+$,/?%#[]".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
       foreach (var w in words)
         query += w + "+";
 
@@ -77,6 +81,7 @@ namespace progrock
           break;
       }
 
+      var selector = By.XPath("//img[@class='irc_mi']");
       var rnd = new Random(DateTime.Now.Millisecond);
       foreach (var href in hrefs)
       {
@@ -84,21 +89,28 @@ namespace progrock
           Thread.Sleep(rnd.Next(1000, 5000));
 
         _driver.Navigate().GoToUrl(href);
-        var imgs = _driver.FindElements(By.ClassName("irc_mi"));
-        foreach (var img in imgs)
-        {
-          string cl = img.GetAttribute("class");
-          if (cl != "irc_mi")
-            continue;
+        var img = _driver.findElement(selector);
 
-          string link = img.GetAttribute("src").ToLower();
-          if (link.EndsWith("jpg") || link.EndsWith("jpeg") || link.EndsWith("png"))
+        try
+        {
+          if (img != null)
           {
-            var pic = new song_picture(link);
+            WebDriverWait wait = new WebDriverWait(_driver, TimeSpan.FromSeconds(10));
+            wait.Until(ExpectedConditions.ElementIsVisible(selector));
+
+            ITakesScreenshot ssdriver = _driver as ITakesScreenshot;
+            byte[] rawss = ((ITakesScreenshot)_driver).GetScreenshot().AsByteArray;
+
+            Bitmap screenshot = new System.Drawing.Bitmap(new MemoryStream(rawss));
+            System.Drawing.Rectangle croppedImage = new System.Drawing.Rectangle(img.Location.X, img.Location.Y, img.Size.Width, img.Size.Height);
+            screenshot = screenshot.Clone(croppedImage, screenshot.PixelFormat);
+
+            var pic = new song_picture(screenshot);
             pictures.Add(pic);
           }
-
-          break;
+        }
+        catch
+        {
         }
       }
 

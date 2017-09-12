@@ -133,7 +133,7 @@ namespace progrock
           }
 
           ep.NextEpisodeUrl = parser.NextPage().Item2;  // if no new episode exists then we exit from the loop by exception
-          break;
+          // break;
         }
       }
       catch (Exception e)
@@ -152,12 +152,17 @@ namespace progrock
           if (string.IsNullOrEmpty(ep.Music) || ep.Downloaded)
             continue;
 
-          Console.Write(ep.Music);
-          var bytes = wc.DownloadData(ep.Music);
-          string fn = ep.Music.Substring(ep.Music.LastIndexOf('/') + 1);
+          string filename = ep.Music.Substring(ep.Music.LastIndexOf('/') + 1);
+          string pathname = Path.Combine(datafolder, filename);
 
-          Console.WriteLine(string.Format(" .. {0}B -> {1}", bytes.Length, fn));
-          File.WriteAllBytes(Path.Combine(datafolder, fn), bytes);
+          if (!File.Exists(pathname))
+          {
+            Console.Write(ep.Music);
+            var bytes = wc.DownloadData(ep.Music);
+
+            Console.WriteLine(string.Format(" .. {0}B -> {1}", bytes.Length, filename));
+            File.WriteAllBytes(pathname, bytes);
+          }
 
           ep.Downloaded = true;
         }

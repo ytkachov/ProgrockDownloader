@@ -27,14 +27,31 @@ namespace grabber
       podcast p = podcast.create("MusicUnframed", podcastfilename);
 
       var parser = p.get_page_parser();
-      p.collect_episodes(parser, initial_url);
+      //p.collect_episodes(parser, initial_url);
 
-      Console.WriteLine("Downloading music files");
-      p.download(podcast.DataFolder);
+      //Console.WriteLine("Downloading music files");
+      //p.download(podcast.DataFolder);
 
       Console.WriteLine("Extracting songs");
       p.extract_songs(podcast.DataFolder, podcast.CollectionFolder, podcast.PicturesFolder);
 
+      // string band = @"Gabriel Sucea & Axel Grassi-Havnen";
+      // string album = @"Manmade Heaven & Hell";
+      //string band = @"Lesoir";
+      //string album = @"Luctor Et Emergo";
+
+      //string bfolder = episode_item.BandFolder(band, podcast.PicturesFolder);
+      //Directory.CreateDirectory(bfolder);
+
+      //string bafolder = episode_item.AlbumFolder(band, album, podcast.PicturesFolder);
+      //Directory.CreateDirectory(bafolder);
+
+      //var bapictures = parser.FindPictures(band, album, true);
+      //for (int i = 0; i < bapictures.Count; i++)
+      //{
+      //  string pn = string.Format("{0:00}.jpg", i);
+      //  bapictures[i].write(Path.Combine(bafolder, pn));
+      //}
 
       try
       {
@@ -62,8 +79,8 @@ namespace grabber
             Directory.CreateDirectory(bafolder);
             for (int i = 0; i < bapictures.Count; i++)
             {
-              string ext = bapictures[i].extension;
-              bapictures[i].load(Path.Combine(bafolder, string.Format("{0:00}{1}", i, ext)));
+              string pn = string.Format("{0:00}.jpg", i);
+              bapictures[i].write(Path.Combine(bafolder, pn));
             }
           }
         }
@@ -76,7 +93,7 @@ namespace grabber
       parser.Shutdown();
 
       string res = p.Serialize();
-      using (FileStream fs = new FileStream(podcastfilename, FileMode.Create))
+      using (FileStream fs = new FileStream(Path.Combine(podcast.RootFolder, podcastfilename), FileMode.Create))
       {
         using (StreamWriter sw = new StreamWriter(fs, Encoding.UTF8))
         {
