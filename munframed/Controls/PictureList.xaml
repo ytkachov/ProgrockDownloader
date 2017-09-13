@@ -24,7 +24,6 @@
         <TextBlock DockPanel.Dock="Left" Text=" / " />
         <TextBlock DockPanel.Dock="Left" Text="{Binding Name}" />
         <TextBlock DockPanel.Dock="Right" Text="{Binding Band}" />
-        <Button Content="*" Command="{Binding RefreshImages}" Padding="1" Margin="2" Width="30"/>
       </DockPanel>
     </Border>
     <ScrollViewer VerticalScrollBarVisibility="Auto">

@@ -14,9 +14,6 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Windows.Markup;
-using System.Globalization;
-using System.Windows.Media;
-using System.Windows.Data;
 
 namespace munframed.usercontrols
 {

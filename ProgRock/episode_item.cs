@@ -71,7 +71,7 @@ namespace progrock
           for (int i = 0; i < 30; i++)
           {
             string[] formats;
-            formats = selectedonly ? new string[] { "{0:00^^}" } : new string[] { "{0:00^^}", "{0:00}" };
+            formats = selectedonly ? new string[] { "{0:00}#" } : new string[] { "{0:00}#", "{0:00}" };
 
             foreach (var fmt in formats)
             {

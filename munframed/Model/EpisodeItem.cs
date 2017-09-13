@@ -17,7 +17,6 @@ namespace munframed.model
     private bool _selected;
 
     private ObservableCollection<SongPicture> _pictures;
-    private CommandHandler _refresh_images;
 
     private NotifyTaskCompletion<List<song_picture>> _loading_pictures;
     public NotifyTaskCompletion<List<song_picture>> LoadingPictures { get { return _loading_pictures; } private set { _loading_pictures = value; RaisePropertyChanged(); } }
@@ -30,8 +29,6 @@ namespace munframed.model
     public EpisodeItem(episode_item ei)
     {
       PictureList = new ObservableCollection<SongPicture>();
-      _refresh_images = new CommandHandler(() => refresh_images(), true);
-
       _song = ei;
     }
 
@@ -61,8 +58,7 @@ namespace munframed.model
           string [] pictures = _song.FindPictures(podcast.PicturesFolder, false);
           foreach (var pict in pictures)
           {
-            var p = new song_picture();
-            p.read(pict);
+            var p = new song_picture(pict);
             lst.Add(p);
           }
 
@@ -72,7 +68,6 @@ namespace munframed.model
         return res;
     }
 
-    public ICommand RefreshImages { get { return _refresh_images; } }
     public ObservableCollection<SongPicture> PictureList { get { return _pictures; } private set { _pictures = value; RaisePropertyChanged(); } }
     public bool Selected
     {

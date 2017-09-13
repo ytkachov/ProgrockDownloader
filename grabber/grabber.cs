@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace grabber
 {
-  class Program
+  class grabber
   {
 
     //static string initial_url = @"http://munframed.com/episode-3";
@@ -25,7 +25,9 @@ namespace grabber
       Directory.CreateDirectory(podcast.PicturesFolder);
 
       podcast p = podcast.create("MusicUnframed", podcastfilename);
-
+      int scount = p.SongCount;
+      int repeatscount = p.UniqueSongCount;
+      Console.WriteLine("Unique songs: {0} of {1}", repeatscount, scount);
       var parser = p.get_page_parser();
       //p.collect_episodes(parser, initial_url);
 

@@ -17,7 +17,6 @@ namespace progrock
 
     [XmlArray]
     public List<episode> Episodes;
-
   }
 
   public partial class podcast
@@ -92,6 +91,36 @@ namespace progrock
       }
 
       return p;
+    }
+
+    public int SongCount
+    {
+      get
+      {
+        int sc = 0;
+        foreach (episode ep in Episodes)
+          sc += ep.Items.Count;
+
+        return sc;
+      }
+    }
+
+    public int UniqueSongCount
+    {
+      get
+      {
+        HashSet<string> set = new HashSet<string>();
+
+        foreach (episode ep in Episodes)
+          foreach (episode_item ei in ep.Items)
+          {
+            string id = ei.band + ei.album + ei.name;
+            if (!set.Contains(id))
+              set.Add(id);
+          }
+
+        return set.Count;
+      }
     }
 
     public IPageParser get_page_parser()
