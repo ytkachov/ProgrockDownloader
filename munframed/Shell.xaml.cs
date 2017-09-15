@@ -16,6 +16,7 @@ using System.Windows.Shapes;
 using munframed.model;
 using System.Globalization;
 using System.Windows.Markup;
+using System.ComponentModel;
 
 namespace munframed
 {
@@ -51,6 +52,12 @@ namespace munframed
     private void OnLoaded(object sender, RoutedEventArgs e)
     {
       DataContext = new MusicUnframed(this);
+    }
+
+    private void OnClosing(object sender, CancelEventArgs e)
+    {
+      MusicUnframed mu = DataContext as MusicUnframed;
+      mu.Save();
     }
   }
 }

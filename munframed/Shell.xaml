@@ -6,11 +6,30 @@
         xmlns:local="clr-namespace:munframed"
         xmlns:uc="clr-namespace:munframed.usercontrols"
         mc:Ignorable="d"
-        Title="Music Unframed" Height="350" Width="800" Loaded="OnLoaded" >
+        Title="Music Unframed" Height="800" Width="1200" Loaded="OnLoaded" Closing="OnClosing">
   <Window.Resources>
   </Window.Resources>
+  <Window.InputBindings>
+    <KeyBinding Command="{Binding GoPrev}" Key="Left" />
+    <KeyBinding Command="{Binding GoNext}" Key="Right"/>
+
+    <KeyBinding Command="{Binding PrevSong}" Key="Up" />
+    <KeyBinding Command="{Binding NextSong}" Key="Down" />
+
+    <KeyBinding Command="{Binding PrevPicture}" Key="Up" Modifiers="Alt"/>
+    <KeyBinding Command="{Binding NextPicture}" Key="Down" Modifiers="Alt"/>
+  
+  </Window.InputBindings>
   <DockPanel>
     <uc:EpisodeHeader DockPanel.Dock="Top" />
+    <StatusBar DockPanel.Dock="Bottom">
+      <StatusBarItem>
+        <TextBlock>Ready</TextBlock>
+      </StatusBarItem>
+      <StatusBarItem>
+        <TextBlock>Set</TextBlock>
+      </StatusBarItem>
+    </StatusBar>
     <uc:SongList DockPanel.Dock="Left"/>
     <uc:PictureList x:Name="SelectedItemPictures" DataContext="{Binding SelectedItem}" DockPanel.Dock="Right" />
   </DockPanel>

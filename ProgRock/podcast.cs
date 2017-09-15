@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
 
@@ -13,10 +15,15 @@ namespace progrock
   public partial class podcast
   {
     [XmlAttribute]
+    public PodcastType Type;
+
+    [XmlAttribute]
     public string Name;
 
     [XmlArray]
     public List<episode> Episodes;
+
+
   }
 
   public partial class podcast
@@ -26,7 +33,15 @@ namespace progrock
     private static string _datafolder;
     private static string _picturesfolder;
 
+    private string _filename;
     private IPageParser _page_parser;
+
+    public enum PodcastType
+    {
+      MusicUnframed,
+      MusicInWideScreen,
+      MusicCollection
+    }
 
     public static string RootFolder
     {
@@ -72,12 +87,13 @@ namespace progrock
 
     }
 
-    public static podcast create(string pname, string path)
+    public static podcast create(PodcastType type, string filename)
     {
       podcast p;
-      string ppath = Path.Combine(podcast.RootFolder, path);
+
+      string ppath = Path.Combine(podcast.RootFolder, filename);
       if (!File.Exists(ppath))
-        p = new podcast() { Name = pname, Episodes = new List<episode>() };
+        p = new podcast() { Type = type, Episodes = new List<episode>() };
       else
       {
         using (FileStream file = new FileStream(ppath, FileMode.Open, FileAccess.Read))
@@ -90,6 +106,7 @@ namespace progrock
         }
       }
 
+      p._filename = filename;
       return p;
     }
 
@@ -123,10 +140,48 @@ namespace progrock
       }
     }
 
+    public void save()
+    {
+      string res = this.Serialize();
+      using (FileStream fs = new FileStream(Path.Combine(podcast.RootFolder, _filename), FileMode.Create))
+      {
+        using (StreamWriter sw = new StreamWriter(fs, Encoding.UTF8))
+        {
+          sw.Write(res);
+        }
+      }
+    }
+
+    public int mark_repeats()
+    {
+      int count = 0;
+      HashSet<string> set = new HashSet<string>();
+
+      foreach (episode ep in Episodes)
+        foreach (episode_item ei in ep.Items)
+        {
+          string id = ei.band + ei.album + ei.name;
+          if (!set.Contains(id))
+            set.Add(id);
+          else
+          {
+            ei.repeated = true;
+            count++;
+          }
+        }
+
+      return count;
+    }
+
     public IPageParser get_page_parser()
     {
       if (_page_parser == null)
-        _page_parser = new munframed_page_parser();
+      {
+        if (Type == PodcastType.MusicInWideScreen)
+          _page_parser = new miws_page_parser();
+        else if (Type == PodcastType.MusicUnframed)
+          _page_parser = new munframed_page_parser();
+      }
 
       return _page_parser;
       throw new NotImplementedException();
@@ -173,12 +228,15 @@ namespace progrock
 
     public void download(string datafolder)
     {
-      try
+      foreach (var ep in Episodes)
       {
-        var wc = new WebClient();
-        foreach (var ep in Episodes)
+        try
         {
+
           if (string.IsNullOrEmpty(ep.Music) || ep.Downloaded)
+            continue;
+
+          if (ep.Items.Count == 0)
             continue;
 
           string filename = ep.Music.Substring(ep.Music.LastIndexOf('/') + 1);
@@ -186,19 +244,63 @@ namespace progrock
 
           if (!File.Exists(pathname))
           {
-            Console.Write(ep.Music);
-            var bytes = wc.DownloadData(ep.Music);
+            Console.WriteLine(ep.Music);
 
-            Console.WriteLine(string.Format(" .. {0}B -> {1}", bytes.Length, filename));
-            File.WriteAllBytes(pathname, bytes);
+            for (int attempt = 0; attempt < 10; attempt++)
+            {
+              byte[] bytes = null;
+              long totalbytes = 0;
+              long recievedbytes = 0;
+              DateTime lastread = DateTime.Now;
+
+              var wc = new WebClient();
+
+              wc.DownloadDataCompleted += delegate (object sender, DownloadDataCompletedEventArgs e) 
+              {
+                if (!e.Cancelled && !(e.Error == null))
+                  bytes = e.Result;
+              };
+
+              wc.DownloadProgressChanged += delegate (object sender, DownloadProgressChangedEventArgs e) 
+              {
+                if (recievedbytes != e.BytesReceived)
+                {
+                  lastread = DateTime.Now;
+
+                  recievedbytes = e.BytesReceived;
+                  totalbytes = e.TotalBytesToReceive;
+
+                }
+              };
+
+              wc.DownloadDataAsync(new Uri(ep.Music));
+              while (wc.IsBusy)
+              {
+                Console.Write("\r[{2}] {0} of {1}                   ", recievedbytes.ToString("#,#", CultureInfo.InvariantCulture), totalbytes.ToString("#,#", CultureInfo.InvariantCulture), attempt);
+                Thread.Sleep(1000);
+
+                if (DateTime.Now - lastread > TimeSpan.FromSeconds(30))
+                {
+                  wc.CancelAsync();
+                  break;
+                }
+              }
+              
+              if (bytes != null)
+              {
+                Console.WriteLine(string.Format("\r [{2}] {0} -> {1}                       ", bytes.Length.ToString("#,#", CultureInfo.InvariantCulture), filename, attempt));
+                File.WriteAllBytes(pathname, bytes);
+                ep.Downloaded = true;
+
+                break;
+              }
+            }
           }
-
-          ep.Downloaded = true;
         }
-      }
-      catch (Exception e)
-      {
-        Console.WriteLine("\n\nException: " + e.Message + "\n\n");
+        catch (Exception e)
+        {
+          Console.WriteLine("\n\nException: " + e.Message + "\n\n");
+        }
       }
     }
 
@@ -213,27 +315,22 @@ namespace progrock
           if (ep.Splitted || !ep.Downloaded || !File.Exists(fname))
             continue;
 
-          DateTime epbegin = DateTime.ParseExact(ep.Items[0].start, "HH:mm:ss", System.Globalization.CultureInfo.InvariantCulture);
+          DateTime epbegin = ep.Items[0].GetStart();
 
           var mf = new mp3(fname);
           foreach (var song in ep.Items)
           {
-            string band = song.band.NormalizeFileName();
-            string album = song.album.NormalizeFileName();
-            string name = song.name.NormalizeFileName();
+            string bpath = song.BandFolder(collectionfolder);
+            Directory.CreateDirectory(bpath);
 
-            string bpath = Path.Combine(collectionfolder, band);
-            if (!Directory.Exists(bpath))
-              Directory.CreateDirectory(bpath);
+            string apath = song.YearAlbumFolder(collectionfolder);
+            Directory.CreateDirectory(apath);
 
-            string apath = Path.Combine(bpath, song.year.ToString() + " - " + album);
-            if (!Directory.Exists(apath))
-              Directory.CreateDirectory(apath);
-
-            DateTime sbegin = DateTime.ParseExact(song.start, @"HH:mm:ss", System.Globalization.CultureInfo.InvariantCulture);
+            DateTime sbegin = song.GetStart();
             TimeSpan start = sbegin - epbegin;
-            TimeSpan end = start + TimeSpan.Parse("00:" + song.duration);
+            TimeSpan end = start + song.GetDuration();
 
+            string name = song.name.NormalizeFileName();
             string sfname = Path.Combine(apath, name + ".mp3");
             if (File.Exists(sfname))
               continue;

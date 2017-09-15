@@ -14,28 +14,29 @@ namespace grabber
   {
 
     //static string initial_url = @"http://munframed.com/episode-3";
-    static string initial_url = @"http://munframed.com/episode-2";
+    static string initial_url = @"http://www.musicinwidescreen.com/2014/03/02/episode-537";
 
     static void Main(string[] args)
     {
-      podcast.RootFolder = @"Y:\ProgRock";
-      string podcastfilename = "munframed.xml";
+      podcast.RootFolder = @"Y:\ProgRock\MIWS";
+      string podcastfilename = "mwidescreen.xml";
       Directory.CreateDirectory(podcast.CollectionFolder);
       Directory.CreateDirectory(podcast.DataFolder);
       Directory.CreateDirectory(podcast.PicturesFolder);
 
-      podcast p = podcast.create("MusicUnframed", podcastfilename);
+      podcast p = podcast.create(podcast.PodcastType.MusicInWideScreen, podcastfilename);
       int scount = p.SongCount;
       int repeatscount = p.UniqueSongCount;
       Console.WriteLine("Unique songs: {0} of {1}", repeatscount, scount);
+      p.mark_repeats();
       var parser = p.get_page_parser();
-      //p.collect_episodes(parser, initial_url);
+      //      p.collect_episodes(parser, initial_url);
 
       //Console.WriteLine("Downloading music files");
       //p.download(podcast.DataFolder);
 
-      Console.WriteLine("Extracting songs");
-      p.extract_songs(podcast.DataFolder, podcast.CollectionFolder, podcast.PicturesFolder);
+      //Console.WriteLine("Extracting songs");
+      //p.extract_songs(podcast.DataFolder, podcast.CollectionFolder, podcast.PicturesFolder);
 
       // string band = @"Gabriel Sucea & Axel Grassi-Havnen";
       // string album = @"Manmade Heaven & Hell";

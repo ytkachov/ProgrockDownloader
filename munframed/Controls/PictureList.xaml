@@ -26,7 +26,7 @@
         <TextBlock DockPanel.Dock="Right" Text="{Binding Band}" />
       </DockPanel>
     </Border>
-    <ScrollViewer VerticalScrollBarVisibility="Auto">
+    <ScrollViewer x:Name="SongPictureList" VerticalScrollBarVisibility="Visible">
       <ItemsControl VerticalAlignment="Stretch"
                     BorderThickness="0"
                     ItemsSource="{Binding Source={StaticResource pictureList}}"

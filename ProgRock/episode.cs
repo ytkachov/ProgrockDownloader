@@ -30,8 +30,13 @@ namespace progrock
     [XmlAttribute]
     public bool Splitted;
 
+    [XmlAttribute]
+    public bool Current;
+
     [XmlArray]
     public List<episode_item> Items;
+
+
   }
 
   public static class XmlSerialization

@@ -5,20 +5,24 @@
              xmlns:c="clr-namespace:CalcBinding;assembly=CalcBinding"
              xmlns:m="clr-namespace:System.Windows.Media;assembly=PresentationCore"
              >
-  <UserControl.Resources>
-    <CollectionViewSource x:Key="songList" Source="{Binding SongList}">
-   </CollectionViewSource>
-  </UserControl.Resources>
 
-    <ScrollViewer VerticalScrollBarVisibility="Auto">
-      <ItemsControl Width="250"
+    <!--<ScrollViewer x:Name="EpisodeItemList" Focusable="False" VerticalScrollBarVisibility="Visible">-->
+      <ItemsControl Name="SongListHost" Width="250"
                           VerticalAlignment="Stretch"
                           BorderThickness="0"
-                          ItemsSource="{Binding Source={StaticResource songList}}"
+                          ItemsSource="{Binding SongList}"
                           >
-        <ItemsControl.ItemTemplate>
+      <ItemsControl.Template>
+        <ControlTemplate>
+          <ScrollViewer x:Name="EpisodeItemList" Focusable="False" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Disabled" >
+            <WrapPanel IsItemsHost="True" />
+          </ScrollViewer>
+        </ControlTemplate>
+      </ItemsControl.Template>
+
+      <ItemsControl.ItemTemplate>
           <DataTemplate>
-            <Grid Margin="2">
+            <Grid Margin="2" Width="230">
               <Border Margin="2 2 0 0"
                                     CornerRadius="4"
                                     Background="Gray"
@@ -78,5 +82,5 @@
         </DataTemplate>
         </ItemsControl.ItemTemplate>
       </ItemsControl>
-    </ScrollViewer>
+    <!--</ScrollViewer>-->
 </UserControl>

@@ -30,10 +30,34 @@ namespace progrock
 
     [XmlAttribute("Duration")]
     public string duration;
+
+    [XmlAttribute("Composer")]
+    public string composer;
+
+    [XmlAttribute("Label")]
+    public string label;
+
+    [XmlAttribute("Repeated")]
+    public bool repeated;
   }
+
 
   public partial class episode_item
   {
+    internal DateTime GetStart()
+    {
+      return DateTime.ParseExact(start, @"HH:mm:ss", System.Globalization.CultureInfo.InvariantCulture);
+    }
+
+    internal TimeSpan GetDuration()
+    {
+      string dur = duration;
+      if (dur.Length == 8) // for incorrect song duration like 26:33:00 instrad of 26:33
+        dur = duration.Substring(0, 7);
+
+      return TimeSpan.Parse("00:" + dur);
+    }
+
     public string[] FindPictures(string rootname, bool selectedonly = true)
     {
       return FindPictures(band, album, rootname, selectedonly);
@@ -54,9 +78,22 @@ namespace progrock
       return AlbumFolder(band, album, rootname);
     }
 
+    public string YearAlbumFolder(string rootname)
+    {
+      return YearAlbumFolder(band, year, album, rootname);
+    }
+
     public static string AlbumFolder(string band, string album, string rootname)
     {
       return Path.Combine(BandFolder(band, rootname), album.NormalizeFileName());
+    }
+
+    public static string YearAlbumFolder(string band, int year, string album, string rootname)
+    {
+      if (year == 0)
+        return Path.Combine(BandFolder(band, rootname), album.NormalizeFileName());
+
+      return Path.Combine(BandFolder(band, rootname), year.ToString() + " - " + album.NormalizeFileName());
     }
 
     public static string[] FindPictures(string band, string album, string rootname, bool selectedonly)
