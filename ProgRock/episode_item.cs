@@ -39,6 +39,13 @@ namespace progrock
 
     [XmlAttribute("Repeated")]
     public bool repeated;
+
+    [XmlAttribute("AlbumRepeated")]
+    public bool albumrepeated;
+
+    [XmlAttribute("ImageCount")]
+    public int imagecount;
+
   }
 
 

@@ -6,81 +6,90 @@
              xmlns:m="clr-namespace:System.Windows.Media;assembly=PresentationCore"
              >
 
-    <!--<ScrollViewer x:Name="EpisodeItemList" Focusable="False" VerticalScrollBarVisibility="Visible">-->
-      <ItemsControl Name="SongListHost" Width="250"
+  <ItemsControl Name="EpisodeItemsHost" Width="250"
                           VerticalAlignment="Stretch"
                           BorderThickness="0"
-                          ItemsSource="{Binding SongList}"
+                          ItemsSource="{Binding EpisodeItems}"
                           >
-      <ItemsControl.Template>
-        <ControlTemplate>
-          <ScrollViewer x:Name="EpisodeItemList" Focusable="False" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Disabled" >
-            <WrapPanel IsItemsHost="True" />
-          </ScrollViewer>
-        </ControlTemplate>
-      </ItemsControl.Template>
+    <ItemsControl.Template>
+      <ControlTemplate>
+        <ScrollViewer x:Name="EpisodeItemList" Focusable="False" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Disabled" >
+          <WrapPanel IsItemsHost="True" />
+        </ScrollViewer>
+      </ControlTemplate>
+    </ItemsControl.Template>
 
-      <ItemsControl.ItemTemplate>
-          <DataTemplate>
-            <Grid Margin="2" Width="230">
-              <Border Margin="2 2 0 0"
-                                    CornerRadius="4"
-                                    Background="Gray"
-                                    Opacity=".5" />
-              <Border BorderBrush="{StaticResource redBrush}"
+    <ItemsControl.ItemTemplate>
+      <DataTemplate>
+        <DataTemplate.Triggers>
+          <DataTrigger Binding="{Binding Current}" Value="false">
+            <Setter TargetName="InnerBorder" Property="Border.BorderBrush" Value="DarkGreen"/>
+          </DataTrigger>
+          <DataTrigger Binding="{Binding Current}" Value="true">
+            <Setter TargetName="InnerBorder" Property="Border.BorderBrush" Value="DarkRed"/>
+          </DataTrigger>
+        </DataTemplate.Triggers>
+        <Grid Margin="2" Width="230">
+          <Border Margin="2 2 0 0" CornerRadius="4" Background="Gray" />
+          <Border Name="InnerBorder"  BorderBrush="DarkGreen"
                                     BorderThickness="2"
                                     CornerRadius="4"
                                     Margin="0 0 2 2"
                                     Padding="3" MouseDown="OnMouseDown">
-              <Border.Style>
-                <Style TargetType="{x:Type Border}">
-                  <Style.Triggers>
-                    <DataTrigger Binding="{Binding Selected}" Value="true">
-                      <Setter Property="Background" Value="LightGray"></Setter>
-                    </DataTrigger>
-                    <DataTrigger Binding="{Binding Selected}" Value="false">
-                      <Setter Property="Background" Value="White"></Setter>
-                    </DataTrigger>
-                  </Style.Triggers>
-                </Style>
-              </Border.Style>
-              <Grid>
-                <Grid.ColumnDefinitions>
-                  <ColumnDefinition Width="Auto" />
-                  <ColumnDefinition />
-                </Grid.ColumnDefinitions>
-                <Grid.RowDefinitions>
-                  <RowDefinition />
-                  <RowDefinition />
-                  <RowDefinition />
-                  <RowDefinition />
-                </Grid.RowDefinitions>
+            <Border.Style>
+              <Style TargetType="{x:Type Border}">
+                <Style.Triggers>
+                  <DataTrigger Binding="{Binding Current}" Value="true">
+                    <Setter Property="Background" Value="LightGray"></Setter>
+                  </DataTrigger>
+                  <DataTrigger Binding="{Binding Current}" Value="false">
+                    <Setter Property="Background" Value="White"></Setter>
+                  </DataTrigger>
+                </Style.Triggers>
+              </Style>
+            </Border.Style>
+            <Grid>
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition />
+              </Grid.ColumnDefinitions>
+              <Grid.RowDefinitions>
+                <RowDefinition />
+                <RowDefinition />
+                <RowDefinition />
+                <RowDefinition />
+              </Grid.RowDefinitions>
 
-                <TextBlock Grid.ColumnSpan="2"
+              <TextBlock Grid.ColumnSpan="2"
                                                FontWeight="Bold"
                                                Text="{Binding Name}" />
 
 
-                <TextBlock Grid.Row="1"
+              <TextBlock Grid.Row="1"
                                                    Text="   Band: " />
-                <TextBlock Grid.Row="1"
+              <TextBlock Grid.Row="1"
                                                    Grid.Column="1"
                                                    Text="{Binding Band}" />
-                <TextBlock Grid.Row="2"
+              <TextBlock Grid.Row="2"
                                                    Text="   Album: " />
-                <TextBlock Grid.Row="2"
+              <TextBlock Grid.Row="2"
                                                    Grid.Column="1"
                                                    Text="{Binding Album}" />
-                <TextBlock Grid.Row="3"
-                                                   Text="   Year: " />
-                <TextBlock Grid.Row="3"
-                                                   Grid.Column="1"
-                                                   Text="{Binding Year}" />
+              <Grid Grid.Row="3"  Grid.Column="0" Grid.ColumnSpan="2" Margin="5">
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="Auto" />
+                  <ColumnDefinition Width="*"/>
+                  <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Grid.Column="0" Text=" Year: " />
+                <TextBlock Grid.Column="1"  Text="{Binding Year}" />
+                <TextBlock Grid.Column="2"  Text="{Binding SelectedImagesCount}" />
               </Grid>
-            </Border>
-          </Grid>
-        </DataTemplate>
-        </ItemsControl.ItemTemplate>
-      </ItemsControl>
-    <!--</ScrollViewer>-->
+            </Grid>
+          </Border>
+        </Grid>
+      </DataTemplate>
+    </ItemsControl.ItemTemplate>
+  </ItemsControl>
 </UserControl>

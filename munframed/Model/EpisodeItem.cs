@@ -14,7 +14,7 @@ namespace munframed.model
   class EpisodeItem : Notifier
   {
     private episode_item _song;
-    private bool _selected;
+    private bool _current;
 
     private ObservableCollection<SongPicture> _pictures;
 
@@ -36,10 +36,18 @@ namespace munframed.model
     {
       if (e.PropertyName == "IsSuccessfullyCompleted")
       {
+        int icount = 0;
         PictureList.Clear();
         var pl = LoadingPictures.Result;
         foreach (var p in pl)
+        {
           PictureList.Add(new SongPicture(p));
+          if (p.selected)
+            icount++;
+        }
+
+        PictureList[0].Current = true;
+        SelectedImagesCount = icount;
       }
     }
 
@@ -68,16 +76,38 @@ namespace munframed.model
         return res;
     }
 
-    public ObservableCollection<SongPicture> PictureList { get { return _pictures; } private set { _pictures = value; RaisePropertyChanged(); } }
-    public bool Selected
+    public void PictureSelected(SongPicture sp, bool? isChecked)
     {
-      get { return _selected; }
+      int icount = 0;
+      foreach (var p in PictureList)
+      {
+        if (p.Selected)
+          icount++;
+      }
+
+      SelectedImagesCount = icount;
+    }
+
+    public void PictureClicked(SongPicture sp)
+    {
+      foreach (var s in PictureList)
+        if (sp == s)
+          s.Current = true;
+        else
+          s.Current = false;
+    }
+
+
+    public ObservableCollection<SongPicture> PictureList { get { return _pictures; } private set { _pictures = value; RaisePropertyChanged(); } }
+    public bool Current
+    {
+      get { return _current; }
       set
       {
-        _selected = value;
+        _current = value;
         RaisePropertyChanged();
 
-        if (_selected && PictureList.Count == 0)
+        if (_current && PictureList.Count == 0)
           LoadPictures();
       }
     }
@@ -137,9 +167,14 @@ namespace munframed.model
       }
     }
 
-    private void refresh_images()
+    public int SelectedImagesCount
     {
-
+      get { return _song.imagecount; }
+      set
+      {
+        _song.imagecount = value;
+        RaisePropertyChanged();
+      }
     }
   }
 }

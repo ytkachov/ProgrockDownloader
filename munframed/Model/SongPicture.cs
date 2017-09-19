@@ -13,6 +13,7 @@ namespace munframed.model
   {
     private song_picture _data;
     private BitmapImage _picture;
+    private bool _current;
     public SongPicture(song_picture data)
     {
       _data = data;
@@ -34,6 +35,8 @@ namespace munframed.model
     public int X { get { return (int) _picture.Width; } }
     public int Y { get { return (int) _picture.Height; } }
     public bool Selected { get { return _data.selected; } set { _data.selected = value; RaisePropertyChanged(); } }
+    public bool Current { get { return _current; } set { _current = value; RaisePropertyChanged(); } }
     public BitmapImage Picture { get { return _picture; } }
+
   }
 }

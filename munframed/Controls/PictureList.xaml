@@ -8,10 +8,6 @@
              xmlns:m="clr-namespace:System.Windows.Media;assembly=PresentationCore"
              mc:Ignorable="d" 
              >
-  <UserControl.Resources>
-    <CollectionViewSource x:Key="pictureList" Source="{Binding PictureList}">
-    </CollectionViewSource>
-  </UserControl.Resources>
   <DockPanel Margin="5" LastChildFill="True">
     <Border DockPanel.Dock="Top" Style="{StaticResource header}" >
       <DockPanel LastChildFill="False">
@@ -26,45 +22,58 @@
         <TextBlock DockPanel.Dock="Right" Text="{Binding Band}" />
       </DockPanel>
     </Border>
-    <ScrollViewer x:Name="SongPictureList" VerticalScrollBarVisibility="Visible">
-      <ItemsControl VerticalAlignment="Stretch"
+    <ItemsControl Name="PictureListHost" VerticalAlignment="Stretch"
                     BorderThickness="0"
-                    ItemsSource="{Binding Source={StaticResource pictureList}}"
+                    ItemsSource="{Binding PictureList}"
                     >
-        <ItemsControl.ItemTemplate>
-          <DataTemplate>
-            <Grid Margin="5">
-              <Border Margin="2 2 0 0"
-                                    CornerRadius="4"
-                                    Background="LightGray"
-                                    Opacity=".5" />
-              <Border BorderBrush="{StaticResource greenBrush}"
-                                    BorderThickness="2"
-                                    CornerRadius="4"
-                                    Margin="0 0 2 2"
-                                    Padding="3" >
-                <Grid Margin="5">
-                  <Grid.RowDefinitions>
-                    <RowDefinition />
-                    <RowDefinition />
-                  </Grid.RowDefinitions>
+      <ItemsControl.Template>
+        <ControlTemplate>
+          <ScrollViewer x:Name="SongPictureList" Focusable="False" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Disabled" >
+            <WrapPanel IsItemsHost="True" />
+          </ScrollViewer>
+        </ControlTemplate>
+      </ItemsControl.Template>
 
-                  <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="5">
-                    <CheckBox HorizontalAlignment="Left" Width="30" IsChecked="{Binding Selected}" />
-                    <Image  Width="600" HorizontalAlignment="Left" Stretch="{Binding X, Converter={local:WidthToStretch}}" Source="{Binding Picture, Mode=OneTime}" />
-                  </StackPanel>
-                  <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="5">
-                    <TextBlock Text="X = " />
-                    <TextBlock Text="{Binding X, Mode=OneTime}" FontWeight="Bold" Padding="0,0,10,0"/>
-                    <TextBlock Text="Y = "/>
-                    <TextBlock Text="{Binding Y, Mode=OneTime}" FontWeight="Bold"/>
-                  </StackPanel>
-                </Grid>
-              </Border>
-            </Grid>
-          </DataTemplate>
-        </ItemsControl.ItemTemplate>
-      </ItemsControl>
-    </ScrollViewer>
+      <ItemsControl.ItemTemplate>
+        <DataTemplate>
+          <DataTemplate.Triggers>
+            <DataTrigger Binding="{Binding Current}" Value="false">
+              <Setter TargetName="InnerBorder" Property="Border.BorderBrush" Value="DarkGreen"/>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding Current}" Value="true">
+              <Setter TargetName="InnerBorder" Property="Border.BorderBrush" Value="DarkRed"/>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding Current}" Value="true">
+              <Setter TargetName="InnerBorder" Property="Border.Background" Value="LightGray"></Setter>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding Current}" Value="false">
+              <Setter TargetName="InnerBorder" Property="Border.Background" Value="White"></Setter>
+            </DataTrigger>
+          </DataTemplate.Triggers>
+          <Grid Margin="5">
+            <Border Margin="2 2 0 0" CornerRadius="4" Background="LightGray" />
+            <Border Name="InnerBorder" BorderBrush="DarkGreen" BorderThickness="2" CornerRadius="4" Margin="0 0 2 2" Padding="3" MouseDown="OnMouseDown">
+              <Grid Margin="5">
+                <Grid.RowDefinitions>
+                  <RowDefinition />
+                  <RowDefinition />
+                </Grid.RowDefinitions>
+
+                <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="5">
+                  <CheckBox Focusable="False" HorizontalAlignment="Left" Width="30" IsChecked="{Binding Selected}" Unchecked="OnStateChanged" Checked="OnStateChanged" />
+                  <Image  Width="600" HorizontalAlignment="Left" Stretch="{Binding X, Converter={local:WidthToStretch}}" Source="{Binding Picture, Mode=OneTime}" />
+                </StackPanel>
+                <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="5">
+                  <TextBlock Text="X = " />
+                  <TextBlock Text="{Binding X, Mode=OneTime}" FontWeight="Bold" Padding="0,0,10,0"/>
+                  <TextBlock Text="Y = "/>
+                  <TextBlock Text="{Binding Y, Mode=OneTime}" FontWeight="Bold"/>
+                </StackPanel>
+              </Grid>
+            </Border>
+          </Grid>
+        </DataTemplate>
+      </ItemsControl.ItemTemplate>
+    </ItemsControl>
   </DockPanel>
 </UserControl>

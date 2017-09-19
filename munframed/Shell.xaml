@@ -13,12 +13,14 @@
     <KeyBinding Command="{Binding GoPrev}" Key="Left" />
     <KeyBinding Command="{Binding GoNext}" Key="Right"/>
 
-    <KeyBinding Command="{Binding PrevSong}" Key="Up" />
-    <KeyBinding Command="{Binding NextSong}" Key="Down" />
+    <KeyBinding Command="{Binding PrevSong}" Key="Up" Modifiers="Ctrl"/>
+    <KeyBinding Command="{Binding NextSong}" Key="Down" Modifiers="Ctrl"/>
 
-    <KeyBinding Command="{Binding PrevPicture}" Key="Up" Modifiers="Alt"/>
-    <KeyBinding Command="{Binding NextPicture}" Key="Down" Modifiers="Alt"/>
-  
+    <KeyBinding Command="{Binding PrevPicture}" Key="Up" />
+    <KeyBinding Command="{Binding NextPicture}" Key="Down" />
+
+    <KeyBinding Command="{Binding ToggleSelection}" Key="Space" />
+
   </Window.InputBindings>
   <DockPanel>
     <uc:EpisodeHeader DockPanel.Dock="Top" />
@@ -31,6 +33,6 @@
       </StatusBarItem>
     </StatusBar>
     <uc:SongList DockPanel.Dock="Left"/>
-    <uc:PictureList x:Name="SelectedItemPictures" DataContext="{Binding SelectedItem}" DockPanel.Dock="Right" />
+    <uc:PictureList x:Name="SelectedItemPictures" DataContext="{Binding CurrentEpisodeItem}" DockPanel.Dock="Right" />
   </DockPanel>
 </Window>

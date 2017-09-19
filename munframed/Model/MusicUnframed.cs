@@ -57,6 +57,9 @@ namespace munframed.model
     private CommandHandler _go_next;
     private CommandHandler _go_prev_song;
     private CommandHandler _go_next_song;
+    private CommandHandler _go_prev_picture;
+    private CommandHandler _go_next_picture;
+    private CommandHandler _toggle_current_picture_selection;
 
     private int _current_episode;
     private podcast _podcast;
@@ -69,12 +72,16 @@ namespace munframed.model
       _go_prev = new CommandHandler(() => GoTo(false), false);
       _go_next_song = new CommandHandler(() => GoSong(true), true);
       _go_prev_song = new CommandHandler(() => GoSong(false), true);
+      _go_next_picture = new CommandHandler(() => GoPicture(true), true);
+      _go_prev_picture = new CommandHandler(() => GoPicture(false), true);
+      _toggle_current_picture_selection = new CommandHandler(() => ToggleCurrentPictureSelection(), true);
 
       _view = view;
-      SongList = new ObservableCollection<EpisodeItem>();
+      EpisodeItems = new ObservableCollection<EpisodeItem>();
 
       podcast.RootFolder = @"Y:\ProgRock";
       _podcast = podcast.create(podcast.PodcastType.MusicUnframed, _podcastfilename);
+      _podcast.mark_repeats();
 
       int idx = 0;
       for (int i = 0; i < _podcast.Episodes.Count; i++)
@@ -109,12 +116,13 @@ namespace munframed.model
       Title = _podcast.Episodes[_current_episode].Name;
       ItemCount = _podcast.Episodes[_current_episode].Items.Count;
 
-      SongList.Clear();
+      EpisodeItems.Clear();
       foreach (var ei in _podcast.Episodes[_current_episode].Items)
-        SongList.Add(new EpisodeItem(ei));
+        if (!ei.albumrepeated)
+          EpisodeItems.Add(new EpisodeItem(ei));
 
-      SelectedItem = SongList[0];
-      SelectedItem.Selected = true;
+      CurrentEpisodeItem = EpisodeItems[0];
+      CurrentEpisodeItem.Current = true;
 
       ScrollViewer sl = FindChild<ScrollViewer>(_view, "EpisodeItemList");
       if (sl != null)
@@ -127,8 +135,158 @@ namespace munframed.model
     }
     #endregion
 
+    public void EpisodeItemClicked(EpisodeItem ei)
+    {
+      CurrentEpisodeItem = ei;
+    }
+
+    private string _ep_title;
+    private int _ep_item_count;
+    private ObservableCollection<EpisodeItem> _song_list;
+    private EpisodeItem _current_item;
+
+    public int ItemCount { get { return _ep_item_count; } private set { _ep_item_count = value; RaisePropertyChanged(); } }
+    public string Title { get { return _ep_title; } private set { _ep_title = value; RaisePropertyChanged(); } }
+    public ObservableCollection<EpisodeItem> EpisodeItems { get { return _song_list; } private set { _song_list = value; RaisePropertyChanged(); } }
+    public EpisodeItem CurrentEpisodeItem
+    {
+      get { return _current_item; }
+      private set
+      {
+        if (_current_item != null)
+          _current_item.Current = false;
+
+        _current_item = value;
+        SetCurrentItem();
+
+        RaisePropertyChanged();
+      }
+    }
+
+    private void SetCurrentItem()
+    {
+      if (_current_item == null)
+        return;
+
+      for (int i = 0; i < EpisodeItems.Count; i++)
+      {
+        var ei = EpisodeItems[i];
+        if (ei == _current_item)
+        {
+          ei.Current = true;
+
+          var EpisodeItemsHost = FindChild<ItemsControl>(_view, "EpisodeItemsHost");
+          var econtainer = EpisodeItemsHost.ItemContainerGenerator.ContainerFromIndex(i) as FrameworkElement;
+          if (econtainer != null)
+            econtainer.BringIntoView();
+
+          // if (ei.PictureList.Count == 0)
+          {
+            ScrollViewer pl = FindChild<ScrollViewer>(_view, "SongPictureList");
+            if (pl != null)
+              pl.ScrollToVerticalOffset(0);
+          }
+          //else
+          {
+            //int cp = -1, sp = -1;
+            //for (int j = 0; j < ei.PictureList.Count; j++)
+            //{
+            //  if (ei.PictureList[j].Current)
+            //    cp = j;
+            //  if (ei.PictureList[j].Selected)
+            //    sp = j;
+            //}
+            //int p = 0;
+            //if (cp != -1)
+            //  p = cp;
+            //else if (sp != -1)
+            //  p = sp;
+
+            //var PictureListHost = FindChild<ItemsControl>(_view, "PictureListHost");
+            //var pcontainer = PictureListHost.ItemContainerGenerator.ContainerFromIndex(p) as FrameworkElement;
+            //if (pcontainer != null)
+            //  pcontainer.BringIntoView();
+          }
+          break;
+        }
+      }
+    }
+
+    private void Initialize(string url)
+    {
+      CurrentEpisodeItem = null;
+    }
+
+    public ICommand GoPrev { get { return _go_prev; } }
+    public ICommand GoNext { get { return _go_next; } }
+    public ICommand PrevSong { get { return _go_prev_song; } }
+    public ICommand NextSong { get { return _go_next_song; } }
+    public ICommand PrevPicture { get { return _go_prev_picture; } }
+    public ICommand NextPicture { get { return _go_next_picture; } }
+    public ICommand ToggleSelection { get { return _toggle_current_picture_selection; } }
+
+    private void GoTo(bool next = true)
+    {
+      SetEpisode(_current_episode + (next ? +1 : -1));
+    }
+
+    private void GoSong(bool next = true)
+    {
+      for (int i = 0; i < EpisodeItems.Count; i++)
+      {
+        var ei = EpisodeItems[i];
+        if (ei.Current)
+        {
+          int ni = i + (next ? 1 : -1);
+          if (ni >= 0 && ni < EpisodeItems.Count)
+          {
+            CurrentEpisodeItem = EpisodeItems[ni];
+            break;
+          }
+        }
+      }
+    }
+
+    private void GoPicture(bool next = true)
+    {
+      var PictureList = CurrentEpisodeItem.PictureList;
+      for (int i = 0; i < PictureList.Count; i++)
+      {
+        var cp = PictureList[i];
+        if (cp.Current)
+        {
+          int ni = i + (next ? 1 : -1);
+          if (ni >= 0 && ni < PictureList.Count)
+          {
+            cp.Current = false;
+            PictureList[ni].Current = true;
+            var PictureListHost = FindChild<ItemsControl>(_view, "PictureListHost");
+
+            var container = PictureListHost.ItemContainerGenerator.ContainerFromIndex(ni) as FrameworkElement;
+            container.BringIntoView();
+
+            break;
+          }
+        }
+      }
+    }
+
+    private void ToggleCurrentPictureSelection()
+    {
+      var PictureList = CurrentEpisodeItem.PictureList;
+      for (int i = 0; i < PictureList.Count; i++)
+      {
+        var cp = PictureList[i];
+        if (cp.Current)
+        {
+          cp.Selected = !cp.Selected;
+          break;
+        }
+      }
+    }
+
     public static T FindChild<T>(DependencyObject parent, string childName)
-       where T : DependencyObject
+     where T : DependencyObject
     {
       // Confirm parent and childName are valid. 
       if (parent == null) return null;
@@ -170,63 +328,7 @@ namespace munframed.model
 
       return foundChild;
     }
-    public void EpisodeItemClicked(EpisodeItem ei)
-    {
-      foreach (var e in SongList)
-        e.Selected = false;
 
-      ei.Selected = true;
-      SelectedItem = ei;
-    }
-
-    private string _ep_title;
-    private int _ep_item_count;
-    private ObservableCollection<EpisodeItem> _song_list;
-    private EpisodeItem _selected_item;
-
-    public int ItemCount { get { return _ep_item_count; } private set { _ep_item_count = value; RaisePropertyChanged(); } }
-    public string Title { get { return _ep_title; } private set { _ep_title = value; RaisePropertyChanged(); } }
-    public ObservableCollection<EpisodeItem> SongList { get { return _song_list; } private set { _song_list = value; RaisePropertyChanged(); } }
-    public EpisodeItem SelectedItem { get { return _selected_item; } private set { _selected_item = value; RaisePropertyChanged(); } }
-
-    private void Initialize(string url)
-    {
-      SelectedItem = null;
-    }
-
-    public ICommand GoPrev { get { return _go_prev; } }
-    public ICommand GoNext { get { return _go_next; } }
-    public ICommand PrevSong { get { return _go_prev_song; } }
-    public ICommand NextSong { get { return _go_next_song; } }
-
-    private void GoTo(bool next = true)
-    {
-      SetEpisode(_current_episode + (next ? +1 : -1));
-    }
-
-    private void GoSong(bool next = true)
-    {
-      for (int i = 0; i < SongList.Count; i++)
-      {
-        var ei = SongList[i];
-        if (ei.Selected)
-        {
-          int ni = i + (next ? 1 : -1);
-          if (ni >= 0 && ni < SongList.Count)
-          {
-            ei.Selected = false;
-            SongList[ni].Selected = true;
-            SelectedItem = SongList[ni];
-            var SongListHost = FindChild<ItemsControl>(_view, "SongListHost");
-
-            var container = SongListHost.ItemContainerGenerator.ContainerFromIndex(ni) as FrameworkElement;
-            container.BringIntoView();
-
-            break;
-          }
-        }
-      }
-    }
   }
 }
 

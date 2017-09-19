@@ -14,6 +14,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Windows.Markup;
+using munframed.model;
 
 namespace munframed.usercontrols
 {
@@ -51,7 +52,14 @@ namespace munframed.usercontrols
 
     private void OnMouseDown(object sender, MouseButtonEventArgs e)
     {
-      //EpisodeItem item = (EpisodeItem)DataContext;
+      SongPicture sp = (SongPicture)(((Border)sender).DataContext);
+      ((EpisodeItem)DataContext).PictureClicked(sp);
+    }
+
+    private void OnStateChanged(object sender, RoutedEventArgs e)
+    {
+      SongPicture sp = (SongPicture)(((CheckBox)sender).DataContext);
+      ((EpisodeItem)DataContext).PictureSelected(sp, ((CheckBox)sender).IsChecked);
     }
   }
 }

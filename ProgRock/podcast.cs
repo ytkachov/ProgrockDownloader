@@ -155,19 +155,26 @@ namespace progrock
     public int mark_repeats()
     {
       int count = 0;
-      HashSet<string> set = new HashSet<string>();
+      HashSet<string> sset = new HashSet<string>();
+      HashSet<string> aset = new HashSet<string>();
 
       foreach (episode ep in Episodes)
         foreach (episode_item ei in ep.Items)
         {
           string id = ei.band + ei.album + ei.name;
-          if (!set.Contains(id))
-            set.Add(id);
+          if (!sset.Contains(id))
+            sset.Add(id);
           else
           {
             ei.repeated = true;
             count++;
           }
+
+          id = ei.band + ei.album;
+          if (!aset.Contains(id))
+            aset.Add(id);
+          else
+            ei.albumrepeated = true;
         }
 
       return count;
