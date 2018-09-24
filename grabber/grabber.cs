@@ -13,96 +13,109 @@ namespace grabber
   class grabber
   {
 
-    //static string initial_url = @"http://munframed.com/episode-3";
-    static string initial_url = @"http://www.musicinwidescreen.com/2014/03/02/episode-537";
+    static string initial_url = @"http://munframed.com/episode-3";
+    //static string initial_url = @"http://www.musicinwidescreen.com/2014/03/02/episode-537";
+    //static string initial_url = @"E:\";
+
+    //static string initial_url = @"F:\Music\RUS\";
 
     static void Main(string[] args)
     {
-      podcast.RootFolder = @"Y:\ProgRock\MIWS";
-      string podcastfilename = "mwidescreen.xml";
+      podcast.RootFolder = @"Y:\ProgRock";
+
+      // string podcastfilename = "musr.xml";
+      string podcastfilename = "munframed.xml";
+      //string podcastfilename = "mwidescreen.xml";
+      // string podcastfilename = "progrock.xml";
+      // string podcastfilename = "sd_2.xml";
+
       Directory.CreateDirectory(podcast.CollectionFolder);
       Directory.CreateDirectory(podcast.DataFolder);
       Directory.CreateDirectory(podcast.PicturesFolder);
 
-      podcast p = podcast.create(podcast.PodcastType.MusicInWideScreen, podcastfilename);
-      //int scount = p.SongCount;
-      //int repeatscount = p.UniqueSongCount;
-      //Console.WriteLine("Unique songs: {0} of {1}", repeatscount, scount);
-      //p.mark_repeats();
-      var parser = p.get_page_parser();
-      //      p.collect_episodes(parser, initial_url);
+      podcast p = podcast.create(podcast.PodcastType.MusicUnframed, podcastfilename);
+      int scount = p.SongCount;
+      int repeatscount = p.UniqueSongCount;
+      Console.WriteLine("Unique songs: {0} of {1}", repeatscount, scount);
+      p.mark_repeats();
+      int cy = p.correct_year();
 
-      Console.WriteLine("Downloading music files");
-      p.download(podcast.DataFolder);
+      //collectinfo(p);
+      //downloadmusicdata(p);
 
-      //Console.WriteLine("Extracting songs");
-      //p.extract_songs(podcast.DataFolder, podcast.CollectionFolder, podcast.PicturesFolder);
+      //splitmusicdata(p);
+      downloadpictures(p);
+      //picturize(p);
 
-      // string band = @"Gabriel Sucea & Axel Grassi-Havnen";
-      // string album = @"Manmade Heaven & Hell";
-      //string band = @"Lesoir";
-      //string album = @"Luctor Et Emergo";
+      p.get_page_parser().Shutdown();
+      p.save();
+    }
 
-      //string bfolder = episode_item.BandFolder(band, podcast.PicturesFolder);
-      //Directory.CreateDirectory(bfolder);
+    private static void picturize(podcast p)
+    {
+      p.picturize();
+    }
 
-      //string bafolder = episode_item.AlbumFolder(band, album, podcast.PicturesFolder);
-      //Directory.CreateDirectory(bafolder);
-
-      //var bapictures = parser.FindPictures(band, album, true);
-      //for (int i = 0; i < bapictures.Count; i++)
-      //{
-      //  string pn = string.Format("{0:00}.jpg", i);
-      //  bapictures[i].write(Path.Combine(bafolder, pn));
-      //}
-
-      //try
-      //{
-      //  var rnd = new Random(DateTime.Now.Millisecond);
-      //  foreach (var ep in p.Episodes)
-      //  {
-      //    Console.WriteLine(ep.Name);
-
-      //    foreach (var song in ep.Items)
-      //    {
-      //      var pictures = song.FindPictures(podcast.PicturesFolder, false);
-      //      if (pictures.Length != 0)
-      //        continue;
-
-      //      Thread.Sleep(rnd.Next(1000, 5000));
-      //      var bapictures = parser.FindPictures(song.band, song.album, true);
-
-      //      if (bapictures.Count == 0)
-      //        continue;
-
-      //      string bfolder = song.BandFolder(podcast.PicturesFolder);
-      //      Directory.CreateDirectory(bfolder);
-
-      //      string bafolder = song.AlbumFolder(podcast.PicturesFolder);
-      //      Directory.CreateDirectory(bafolder);
-      //      for (int i = 0; i < bapictures.Count; i++)
-      //      {
-      //        string pn = string.Format("{0:00}.jpg", i);
-      //        bapictures[i].write(Path.Combine(bafolder, pn));
-      //      }
-      //    }
-      //  }
-      //}
-      //catch (Exception e)
-      //{
-      //  Console.WriteLine("\n\nException: " + e.Message + "\n\n");
-      //}
-
-      parser.Shutdown();
-
-      string res = p.Serialize();
-      using (FileStream fs = new FileStream(Path.Combine(podcast.RootFolder, podcastfilename), FileMode.Create))
+    private static void downloadpictures(podcast p)
+    {
+      try
       {
-        using (StreamWriter sw = new StreamWriter(fs, Encoding.UTF8))
+        var parser = p.get_page_parser();
+        var rnd = new Random(DateTime.Now.Millisecond);
+        foreach (var ep in p.Episodes)
         {
-          sw.Write(res);
+          Console.WriteLine(ep.Name);
+
+          foreach (var song in ep.Items)
+          {
+            var pictures = song.FindPictures(podcast.PicturesFolder, false);
+            if (pictures.Length != 0)
+              continue;
+
+            Thread.Sleep(rnd.Next(1000, 5000));
+            var bapictures = parser.FindPictures(song.band, song.album, true);
+
+            if (bapictures.Count == 0)
+              continue;
+
+            string bfolder = song.BandFolder(podcast.PicturesFolder);
+            Directory.CreateDirectory(bfolder);
+
+            string bafolder = song.AlbumFolder(podcast.PicturesFolder);
+            Directory.CreateDirectory(bafolder);
+            for (int i = 0; i < bapictures.Count; i++)
+            {
+              string pn = string.Format("{0:00}.jpg", i);
+              bapictures[i].write(Path.Combine(bafolder, pn));
+            }
+          }
         }
       }
+      catch (Exception e)
+      {
+        Console.WriteLine("\n\nException: " + e.Message + "\n\n");
+      }
+    }
+
+    private static void splitmusicdata(podcast p)
+    {
+      Console.WriteLine("Extracting songs");
+      p.extract_songs();
+    }
+
+    private static void downloadmusicdata(podcast p)
+    {
+      Console.WriteLine("Downloading music files");
+      p.download();
+    }
+
+    private static void collectinfo(podcast p)
+    {
+      Console.WriteLine("collecting info");
+      p.collect_episodes(initial_url);
+
+      if (p.Type == podcast.PodcastType.MusicUnframed)
+        p.recollect_episodes();
     }
   }
 

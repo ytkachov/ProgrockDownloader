@@ -67,7 +67,7 @@ namespace progrock
         var xmlSerializer = new XmlSerializer(typeof(TObject));
         using (var stringWriter = new StringWriter())
         {
-          using (var writer = XmlWriter.Create(stringWriter))
+          using (var writer = XmlWriter.Create(stringWriter, new XmlWriterSettings() {  Indent = true }))
           {
             xmlSerializer.Serialize(writer, obj);
             return stringWriter.ToString();

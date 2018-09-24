@@ -6,6 +6,7 @@ using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome; //to use googlechrome browser.
 using OpenQA.Selenium.Support;
 using OpenQA.Selenium.Support.UI;
+using SeleniumExtras.WaitHelpers;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Threading;
@@ -97,7 +98,7 @@ namespace progrock
       query += "album+images";
       _driver.Navigate().GoToUrl(query);
 
-      var picturelinks = _driver.FindElements(By.XPath("//*[@id=\"rg_s\"]/div/a"));
+      var picturelinks = _driver.FindElements(By.XPath("//*[@id='rg_s']/div/a"));
       List<string> hrefs = new List<string>();
       foreach (var a in picturelinks)
       {
@@ -106,11 +107,11 @@ namespace progrock
           continue;
 
         hrefs.Add(href);
-        if (hrefs.Count == 20)
+        if (hrefs.Count == 5)
           break;
       }
 
-      var selector = By.XPath("//img[@class='irc_mi']");
+      var selector = By.XPath("//img[@class='irc_mi'][not(@style='visibility:hidden')]");
       var rnd = new Random(DateTime.Now.Millisecond);
       foreach (var href in hrefs)
       {
@@ -125,7 +126,7 @@ namespace progrock
           if (img != null)
           {
             WebDriverWait wait = new WebDriverWait(_driver, TimeSpan.FromSeconds(10));
-            wait.Until(ExpectedConditions.ElementIsVisible(selector));
+            wait.Until(SeleniumExtras.WaitHelpers.ExpectedConditions.ElementIsVisible(selector));
 
             ITakesScreenshot ssdriver = _driver as ITakesScreenshot;
             byte[] rawss = ((ITakesScreenshot)_driver).GetScreenshot().AsByteArray;
@@ -138,7 +139,7 @@ namespace progrock
             pictures.Add(pic);
           }
         }
-        catch
+        catch (Exception e)
         {
         }
       }
@@ -153,7 +154,79 @@ namespace progrock
     public abstract List<episode_item> TOC();
   }
 
-  public class miws_page_parser : page_parser
+  public class local_folder_parser : page_parser
+  {
+    string[] _subdirs;
+    int _currentsubdir;
+
+    public override string Exists(string url)
+    {
+      if (_subdirs != null)
+        _currentsubdir++;
+      else
+      {
+        if (!Directory.Exists(url))
+          throw new WrongSiteException();
+
+        _subdirs = Directory.GetDirectories(url);
+        if (_subdirs.Length == 0)
+          throw new WrongPageException();
+
+        _currentsubdir = 0;
+      }
+
+      return "Music collection: " + Path.GetFileName(_subdirs[_currentsubdir]); 
+    }
+
+    public override int ItemCount()
+    {
+      string[] filePaths = Directory.GetFiles(_subdirs[_currentsubdir], "*.mp3", SearchOption.AllDirectories);
+      return filePaths.Length;
+    }
+
+    public override Tuple<string, string> NextPage()
+    {
+      if (_currentsubdir == _subdirs.Length - 1)
+        throw new LinkNotFoundException("No next episode found");
+
+      return new Tuple<string, string>(Path.GetFileName(_subdirs[_currentsubdir + 1]), _subdirs[_currentsubdir + 1]);
+    }
+
+    public override Tuple<string, string> PrevPage()
+    {
+      if (_currentsubdir == 0)
+        throw new LinkNotFoundException("No prev episode found");
+
+      return new Tuple<string, string>(Path.GetFileName(_subdirs[_currentsubdir - 1]), _subdirs[_currentsubdir -1]);
+    }
+
+    public override string DownloadLink()
+    {
+      return "";
+    }
+
+    public override List<episode_item> TOC()
+    {
+      List<episode_item> res = new List<episode_item>();
+      string[] filePaths = Directory.GetFiles(_subdirs[_currentsubdir], "*.mp3", SearchOption.AllDirectories);
+      foreach (var fl in filePaths)
+      {
+        try
+        {
+          var mp3f = new mp3(fl);
+          if (mp3f.Band != "" && mp3f.Album != "")
+            res.Add(new episode_item() { band = mp3f.Band, album = mp3f.Album, name = mp3f.Title, year = mp3f.Year, filepath = fl });
+        }
+        catch
+        { 
+        }
+      }
+
+      return res;
+    }
+  }
+
+   public class miws_page_parser : page_parser
   {
     public override string Exists(string url)
     {
@@ -198,7 +271,7 @@ namespace progrock
         throw new LinkNotFoundException("No next episode found");
 
       string text = "", link = "";
-      foreach (int d in new int[] { 0, 1, -1, 7, 6, 8})
+      foreach (int d in new int[] { 0, 1, -1, 7, 6, 8, 14, 13, 15, 21, 20, 22 })
       {
         DateTime dtt = dt.AddDays(d);
 
@@ -250,9 +323,11 @@ namespace progrock
       Tuple<int, string[]> tJ = new Tuple<int, string[]>( 0, new string[] { "Time", "Band", "Song", "Time", "Album", "", "", "", "" });
       Tuple<int, string[]> tK = new Tuple<int, string[]>( 0, new string[] { "Time", "Band", "Song", "Time", "Album", "Year", "Composer", "Listeners", "" });
       Tuple<int, string[]> tL = new Tuple<int, string[]>( 0, new string[] { "Time", "Band", "Song", "Time", "Album", "Year", "", "", "" });
-      Tuple<int, string[]> tM = new Tuple<int, string[]>( 0, new string[] { "Time", "Band", "Song", "Time", "Album", "Year", "Composer", "Label", "", "" });
+      Tuple<int, string[]> tM = new Tuple<int, string[]>(0, new string[] { "Time", "Band", "Song", "Time", "Album", "Year", "Composer", "Label", "", "" });
+      Tuple<int, string[]> tN = new Tuple<int, string[]>(0, new string[] { "Band", "Album", "Year", "Composer", "", "", "", "", "", "" });
+      Tuple<int, string[]> tO = new Tuple<int, string[]>(0, new string[] { "Time", "Artist", "Title", "Duration", "Album", "Year", "Composer", "Label", "" });
 
-      Tuple<int, string[]>[] types = new Tuple<int, string[]>[] { t1, t2, t3, t4, t5, t6, t7, t8, t9, tA, tB, tC, tD, tE, tF, tG, tH, tI, tJ, tK, tL, tM };
+      Tuple<int, string[]>[] types = new Tuple<int, string[]>[] { t1, t2, t3, t4, t5, t6, t7, t8, t9, tA, tB, tC, tD, tE, tF, tG, tH, tI, tJ, tK, tL, tM, tN, tO };
       var th = items[0].FindElements(By.TagName("td"));
       string[] ht = new string[th.Count];
       for (int k = 0; k < th.Count; k++)
@@ -359,7 +434,7 @@ namespace progrock
       var items = tbl.FindElements(By.TagName("tr"));
       var firstrow = items[0].FindElements(By.TagName("td"));
       int firstitem = 0;
-      if (firstrow[0].Text == "Time" && firstrow[1].Text == "Band" && firstrow[2].Text == "Song")
+      if (firstrow[0].Text == "Time" && firstrow[1].Text == "Band" && (firstrow[2].Text == "Song" || firstrow[2].Text == "Name"))
         firstitem = 1;
 
       return items.Count - firstitem;
@@ -397,7 +472,7 @@ namespace progrock
       // check if table is in old format
       var firstrow = items[0].FindElements(By.TagName("td"));
       int firstitem = 0;
-      if (firstrow[0].Text == "Time" && firstrow[1].Text == "Band" && firstrow[2].Text == "Song")
+      if (firstrow[0].Text == "Time" && firstrow[1].Text == "Band" && (firstrow[2].Text == "Song" || firstrow[2].Text == "Name"))
         firstitem = 1;
 
       for (int i = firstitem; i < items.Count; i++)

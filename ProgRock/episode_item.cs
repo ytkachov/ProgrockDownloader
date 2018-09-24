@@ -13,14 +13,18 @@ namespace progrock
   [XmlRoot("EpisodeItem")]
   public partial class episode_item 
   {
+    private string _name;
+    private string _band;
+    private string _album;
+
     [XmlAttribute("Name")]
-    public string name;
+    public string name { get { return string.IsNullOrEmpty(_name) ? "" : _name; } set { _name = value; } }
 
     [XmlAttribute("Band")]
-    public string band;
+    public string band { get { return string.IsNullOrEmpty(_band) ? "" : _band; } set { _band = value; } }
 
     [XmlAttribute("Album")]
-    public string album;
+    public string album { get { return string.IsNullOrEmpty(_album) ? "" : _album; } set { _album = value; } }
 
     [XmlAttribute("Year")]
     public int year;
@@ -37,6 +41,9 @@ namespace progrock
     [XmlAttribute("Label")]
     public string label;
 
+    [XmlAttribute("Filepath")]
+    public string filepath;
+
     [XmlAttribute("Repeated")]
     public bool repeated;
 
@@ -45,7 +52,6 @@ namespace progrock
 
     [XmlAttribute("ImageCount")]
     public int imagecount;
-
   }
 
 
@@ -59,8 +65,8 @@ namespace progrock
     internal TimeSpan GetDuration()
     {
       string dur = duration;
-      if (dur.Length == 8) // for incorrect song duration like 26:33:00 instrad of 26:33
-        dur = duration.Substring(0, 7);
+      if (dur.Length == 8) // for incorrect song duration like 26:33:00 instead of 26:33
+        dur = duration.Substring(0, 5);
 
       return TimeSpan.Parse("00:" + dur);
     }
@@ -101,6 +107,25 @@ namespace progrock
         return Path.Combine(BandFolder(band, rootname), album.NormalizeFileName());
 
       return Path.Combine(BandFolder(band, rootname), year.ToString() + " - " + album.NormalizeFileName());
+    }
+
+    public string GetFilePath(string collectionfolder)
+    {
+      if (!string.IsNullOrEmpty(filepath))
+        return filepath;
+      else
+      {
+        string bpath = BandFolder(collectionfolder);
+        Directory.CreateDirectory(bpath);
+
+        string apath = YearAlbumFolder(collectionfolder);
+        Directory.CreateDirectory(apath);
+
+        string fname = name.NormalizeFileName();
+        string sfname = Path.Combine(apath, name + ".mp3");
+
+        return sfname;
+      }
     }
 
     public static string[] FindPictures(string band, string album, string rootname, bool selectedonly)

@@ -51,7 +51,7 @@ namespace munframed.model
   {
     private Shell _view;
 
-    private static string _podcastfilename = "munframed.xml";
+    private static string[] _podcastfilenames = { "musr.xml" }; // "localcollection.xml", "munframed.xml", "mwidescreen.xml", "mobile.xml" };
 
     private CommandHandler _go_prev;
     private CommandHandler _go_next;
@@ -62,9 +62,38 @@ namespace munframed.model
     private CommandHandler _toggle_current_picture_selection;
 
     private int _current_episode;
-    private podcast _podcast;
+    private multipodcast _podcast;
 
     #region Constructor
+
+    public class multipodcast : podcast
+    {
+      private podcast[] _podcasts;
+      private string [] _filenames;
+
+      public multipodcast(string [] filenames)
+      {
+        Episodes = new List<episode>();
+
+        _podcasts = new podcast[filenames.Length];
+        _filenames = new string[filenames.Length];
+
+        for (int i = 0; i < filenames.Length; i++)
+        {
+          _filenames[i] = filenames[i];
+          _podcasts[i] = podcast.create(PodcastType.MusicCollection, filenames[i]);
+
+          Episodes.AddRange(_podcasts[i].Episodes);
+        }
+
+      }
+
+      public new void save()
+      {
+        foreach (var p in _podcasts)
+          p.save();
+      }
+    }
 
     public MusicUnframed(Shell view)
     {
@@ -80,17 +109,19 @@ namespace munframed.model
       EpisodeItems = new ObservableCollection<EpisodeItem>();
 
       podcast.RootFolder = @"Y:\ProgRock";
-      _podcast = podcast.create(podcast.PodcastType.MusicUnframed, _podcastfilename);
+      _podcast = new multipodcast(_podcastfilenames);
       _podcast.mark_repeats();
+      _podcast.correct_year();
 
       int idx = 0;
       for (int i = 0; i < _podcast.Episodes.Count; i++)
         if (_podcast.Episodes[i].Current)
         {
           idx = i;
-          break;
+          //break;
         }
 
+      //idx = 0;
       SetEpisode(idx);
     }
 
@@ -121,8 +152,13 @@ namespace munframed.model
         if (!ei.albumrepeated)
           EpisodeItems.Add(new EpisodeItem(ei));
 
-      CurrentEpisodeItem = EpisodeItems[0];
-      CurrentEpisodeItem.Current = true;
+      if (EpisodeItems.Count == 0)
+        CurrentEpisodeItem = null;
+      else
+      {
+        CurrentEpisodeItem = EpisodeItems[0];
+        CurrentEpisodeItem.Current = true;
+      }
 
       ScrollViewer sl = FindChild<ScrollViewer>(_view, "EpisodeItemList");
       if (sl != null)
